@@ -2,11 +2,11 @@ import Elevator from "./Elevator.js";
 
 export default class Look extends Elevator {
   lastDirectionUp = true;
-  
+
   next() {
-    if (isIdle()) {
+    if (!this.hasRequests()) {
       // No need to look for the next request if we know there's none
-      return this.currentFloor;
+      return null
     }
     let nextScan = this.lastDirectionUp == true ? this.findNextRequestUp : this.findNextRequestDown;
     let tempNext = nextScan();

@@ -22,8 +22,8 @@ export default class Elevator {
     this.currentHeight = currentHeight;
   }
 
-  isIdle() {
-    return this.currentRequestAmount <= 0;
+  hasRequests() {
+    return this.currentRequestAmount > 0;
   }
 
   moveUp() {
