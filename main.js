@@ -24,7 +24,9 @@ const CONFIG = {
 
 function start() {
   view.initView(FLOOR_HEIGHT_IN_METERS);
-//  view.moveElevator(elevators[0], 2, -1);
+  startSimulation()
+ view.moveElevator(elevators[0], 2, -1);
+ setTimeout(newElevatorMove, 500);
 }
 
 function clearGameState() {
@@ -41,7 +43,7 @@ export function startSimulation() {
   }
 
   keepRandomlyAddingPeople();
-  requestAnimationFrame(gameTick);
+//   requestAnimationFrame(gameTick);
 }
 
 let elevators = [new Look("look", FLOOR_WEIGHTS)];
@@ -84,6 +86,10 @@ function keepRandomlyAddingPeople() {
   timer = setTimeout(keepRandomlyAddingPeople, 500);
 }
 
+function newElevatorMove(){
+ view.moveElevator(elevators[0], 2, -2);
+}
+
 // Problem: Converting the height in meters to the translate value in px
 function moveElevator(elevator, deltaTime) {
   const distance = (elevator.speed / 1000) * deltaTime;
@@ -111,8 +117,6 @@ function moveElevator(elevator, deltaTime) {
     }
   }
 //   view.moveElevator(elevator, currentWeight);
-
-
 //   console.log("current height", elevator.currentHeight);
 
 
@@ -120,14 +124,13 @@ function moveElevator(elevator, deltaTime) {
 
 let lastTime = 0;
 function gameTick(timestamp) {
-    view.moveElevator(elevators[0], 2, 3);
   // console.log("game tick");
-  if (!CONFIG.paused && !CONFIG.gameOver) {
-    requestAnimationFrame(gameTick);
-  }
+//   if (!CONFIG.paused && !CONFIG.gameOver) {
+//     requestAnimationFrame(gameTick);
+//   }
 
-  const deltaTime = timestamp - lastTime;
-  lastTime = timestamp;
+//   const deltaTime = timestamp - lastTime;
+//   lastTime = timestamp;
   for (const elevator of elevators) {
     if (elevator.nextFloor != null && elevator.nextFloor != elevator.currentFloor) {
       moveElevator(elevator, deltaTime);

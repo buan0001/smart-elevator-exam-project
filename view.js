@@ -27,6 +27,8 @@ export function updateFloorStats(elevator) {
 export function updateElevatorStats(elevator) {}
 
 export function moveElevator(elevator, duration, floorChanges) {
+  console.log(elevator);
+  
     // document.querySelector(`#elevator-${elevator.name}`).style.setProperty(`--ANIMATION-TIME`, time + "s");
     // document.querySelector(`#elevator-${elevator.name}`).classList.add(className)
     // console.log(elevator.currentHeight, elevator.currentHeight*8.57);
@@ -37,9 +39,14 @@ export function moveElevator(elevator, duration, floorChanges) {
 
   // document.querySelector(`#${elevator.name} .elevator`).style.transition = `top 5s`;
   // document.querySelector(`#${elevator.name} .elevator`).style.translate  = `0 ${targetFloor*200}px`;
-  document.querySelector(`#${elevator.name} .elevator`).style.transition = `transform ${duration}s linear`;
-  document.querySelector(`#${elevator.name} .elevator`).style.transform = `translateY(${floorChanges * 100}px)`;
-  // document.querySelector(`#${elevator.name} .elevator`).style.transform = `translateY(${400 - elevator.floorDistances[targetFloor] * 11.42}px)`;
+  const elevatorNode = document.querySelector(`#${elevator.name} .elevator`)
+  elevatorNode.style.transition = `transform ${duration}s linear`;
+  elevatorNode.style.transform = `translateY(${elevator.currentFloor - elevator.nextFloor * 100}px)`;
+  // elevatorNode.style.transform = `translateY(${floorChanges * 100}px)`;
+  elevatorNode.addEventListener("transitionend", () => {
+    console.log("transition has ended");
+    
+  })
 }
 
 export function addWaitingPersonToFloor(floorNumber) {
