@@ -1,20 +1,40 @@
-export function initView() {
-  initializeElevators();
-}
-
 const elevators = [
   {
     algorithmName: "Shortest seek first",
-    className: "ssf",
+    id: "ssf",
   },
   {
     algorithmName: "LOOK",
-    className: "look",
+    id: "look",
   },
 ];
 
+export function initView() {
+  initializeElevators();
+  addEventListeners();
+}
+
+function addEventListeners() {
+  document.querySelectorAll(".elevatorBox").forEach((box) => {
+    box.addEventListener("change", (e) => {
+      console.log(e.target.dataset.id);
+
+      const elevatorNode = document.querySelector(`#${e.target.dataset.id}`);
+      elevatorNode.hidden = !elevatorNode.hidden;
+    });
+  });
+}
+
+export function addWaitingPersonToFloor(floorNumber) {
+  for (const elevator of elevators) {
+    const root = document.querySelector(`#${elevator.id}`);
+    const floor = root.querySelector(`[data-floor='${floorNumber}']`);
+    floor.insertAdjacentHTML("beforeend", `<div class="person"></div>`)
+  }
+}
+
 function initializeElevators() {
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 2; i++) {
     initializeSingleElevator(elevators[i]);
   }
 }
@@ -24,10 +44,9 @@ function initializeSingleElevator(elevator) {
   container.insertAdjacentHTML(
     "beforeend",
     /*HTML*/ `
-    <div id=${elevator.className}>
+    <div id=${elevator.id}>
     <div class="elevator-header">
       <h2>${elevator.algorithmName} </h2>
-      <button>Hide</button>
     </div>
       <div class="stat-container">
         <div class="stat">Total time spent:<span id="tts"></span></div>
@@ -39,10 +58,7 @@ function initializeSingleElevator(elevator) {
         <div class="elevator-tube"><div class="elevator">0</div></div>
           <div class="floor-container">
             <div class="floor top-floor" data-floor="4">
-            <div class="requestCount" id="requestCount4">Requests: 2</div>
-          
-                <div class="person"> </div>
-                <div class="person"> </div>
+            <div class="requestCount" id="requestCount4">Requests: 0</div>
             </div>    
             <div class="fdistance" data-fdist="3"></div>    
             <div class="floor" data-floor="3">

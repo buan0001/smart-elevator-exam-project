@@ -12,11 +12,12 @@
         <button id="start-btn">Start it all!</button>
         <button>Pause</button>
         <button>Single step</button>
-
-             An overview of the current requests for each elevator that change in real time
-            A pause / single stepping feature
-            Hide individual elevator views
-                Consider if they should keep running in the background
+        <div>
+             Elevators to display: 
+            <input data-id="ssf" type="checkbox" class="elevatorBox" autocomplete="off" checked>Shortest Seek First</input>
+            <input data-id="look" type="checkbox" class="elevatorBox" autocomplete="off" checked>Look</input>
+            <input data-id="dijkstra" type="checkbox" class="elevatorBox" autocomplete="off" checked>Dijkstra</input>
+        </div>
     </div>
     <div id="elevators"></div>
 </body>

@@ -1,4 +1,4 @@
-import Elevator from "./Elevator.js";
+import Elevator from "../Elevator.js";
 
 export default class Look extends Elevator {
   lastDirectionUp = true;
@@ -6,7 +6,7 @@ export default class Look extends Elevator {
   next() {
     if (!this.hasRequests()) {
       // No need to look for the next request if we know there's none
-      return null
+      return null;
     }
     let nextScan = this.lastDirectionUp == true ? this.findNextRequestUp : this.findNextRequestDown;
     let tempNext = nextScan();
