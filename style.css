@@ -59,7 +59,6 @@ body {
 }
 
 .requestCount {
-  text-align: end;
   position: absolute;
   translate: 5px -50px;
   border: 1px black;
@@ -67,6 +66,16 @@ body {
   border-radius: 0.5em;
   padding: 0.2em;
   background-color: rgb(162, 233, 129);
+}
+.waitCount {
+  text-align: end;
+  position: absolute;
+  translate: 110px -50px;
+  border: 1px black;
+  border-style: solid;
+  border-radius: 0.5em;
+  padding: 0.2em;
+  background-color: rgb(226, 210, 66);
 }
 
 .elevator-header {
@@ -112,28 +121,12 @@ body {
   background-color: antiquewhite;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 button {
   /* padding: 5px 10px; */
   padding: 10px 20px;
   font-size: 16px;
   color: white;
-  background-color: #007BFF; 
+  background-color: #007bff;
   border: none;
   border-radius: 3px;
   cursor: pointer;
@@ -159,7 +152,12 @@ body {
   color: #333;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 0.5em 0;
   font-weight: bold;
 }
@@ -169,7 +167,7 @@ p {
 }
 
 a {
-  color: #007BFF;
+  color: #007bff;
   text-decoration: none;
   transition: color 0.3s ease;
 }
@@ -183,7 +181,7 @@ a:active {
 }
 
 a:visited {
-  color: #551A8B;
+  color: #551a8b;
 }
 
 strong {
