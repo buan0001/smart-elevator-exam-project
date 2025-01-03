@@ -1,6 +1,6 @@
 export default class Elevator {
   name;
-  // Array of objects with following properties: (int) amountOfPeopleWaiting, (int) waitTime
+  // Array of objects with following properties: (int) amountOfPeopleWaiting, (int) reqBeforeServed
   floorRequests;
   // 2d array of graph weights
   floorWeights; // Let controller keep track of the actual length between floors - here we only need the weights
@@ -9,21 +9,22 @@ export default class Elevator {
   currentHeight = 0;
   currentFloor = 0;
   nextFloor = null;
-  speed = 5; // meters per second
+  speed = 6; // meters per second
 
   constructor(floorWeights, startFloor = 0, currentHeight = 0) {
     this.floorWeights = floorWeights;
     // We always keep the floorRequests at max length so we can use the array indices as floors
     this.floorRequests = new Array(floorWeights.length);
     for (let i = 0; i < this.floorRequests.length; i++) {
-      this.floorRequests[i] = { requests: 0, waitTime: 0 };
+      this.floorRequests[i] = { goingTo: 0, waitingFor: 0, reqBeforeServed: 0 };
+      // this.floorRequests[i] = { requests: 0, reqBeforeServed: 0 };
     }
 
     this.currentFloor = startFloor;
     this.currentHeight = currentHeight;
   }
 
-  next(){
+  next() {
     console.error("next() needs to be overriden by any inheriting class");
   }
 
@@ -31,33 +32,60 @@ export default class Elevator {
     return this.currentRequestAmount > 0;
   }
 
-  moveUp() {
-    this.currentHeight += this.speed;
+  _totalReq(floor) {
+    return this.floorRequests[floor].goingTo + this.floorRequests[floor].waitingFor;
+  }
+  get floorAmt() {
+    return this.floorRequests.length;
   }
 
-  moveDown() {
-    this.currentHeight -= this.speed;
+  arrayWithoutFloor(floorNum) {
+    const floorArr = [];
+    for (let i = 0; i < this.floorAmt; i++) {
+      if (i != floorNum) {
+        floorArr.push(i);
+      }
+    }
+    return floorArr;
   }
 
   // Changes the currentfloor and increments the wait counter for every other request.
-  // Returns: { waitTime, requests }
-  arrivedAtFloor(floorNum) {
+  // Returns: { reqBeforeServed, requests }
+  arrivedAtFloor(floorNum = this.nextFloor) {
     const floorDataCopy = { ...this.floorRequests[floorNum] };
     // Increment the wait counter for every floor that has a pending request
-    for (let i = 0; i < this.floorRequests.length; i++) {
-      if (this.floorRequests[i].requests > 0) {
-        this.floorRequests[i].waitTime++;
+    for (let i = 0; i < this.floorAmt; i++) {
+      console.log("Outer wait");
+      
+      if (this._totalReq(i) > 0) {
+        console.log("Adding wait to",i);
+        
+        this.floorRequests[i].reqBeforeServed++;
       }
     }
     this.currentFloor = floorNum;
-    this.removeRequests(floorNum);
+    const peopleEnteringFromFloor = this.removeRequests(floorNum);
+    // Each person who entered the elevator will want to go to a random floor
+    // Could weigh the floors but not for now
+    const floorArr = this.arrayWithoutFloor(floorNum);
+    for (let i = 0; i < peopleEnteringFromFloor; i++) {
+      const temp = floorArr[Math.floor(Math.random() * (this.floorAmt - 1))];
+      console.log("Person entering the elevator going to", temp);
+
+      this.addRequest(temp);
+    }
+    this.next();
     return floorDataCopy;
-    // Decrement by 1 since the floor got a "fake" increment in the loop above
   }
 
-  addRequest(floorNum) {
+
+  addRequest(floorNum, isWaitingForElevator) {
     if (this.isValidRequest(floorNum)) {
-      this.floorRequests[floorNum].requests++;
+      if (isWaitingForElevator) {
+        this.floorRequests[floorNum].waitingFor++;
+      } else {
+        this.floorRequests[floorNum].goingTo++;
+      }
       this.currentRequestAmount++;
       this.totalRequestAmount++;
     }
@@ -66,10 +94,13 @@ export default class Elevator {
   // Resets the requests on the given floor.
   removeRequests(floorNum) {
     if (this.isValidRequest(floorNum)) {
-      this.currentRequestAmount -= this.floorRequests[floorNum].requests;
+      this.currentRequestAmount -= this._totalReq(floorNum);
       // We remove every request at the same time, since they're only ever removed upon reaching the desired floor
-      this.floorRequests[floorNum].waitTime = 0;
-      this.floorRequests[floorNum].requests = 0;
+      this.floorRequests[floorNum].reqBeforeServed = 0;
+      const newPeopleEntering = this.floorRequests[floorNum].waitingFor;
+      this.floorRequests[floorNum].waitingFor = 0;
+      this.floorRequests[floorNum].goingTo = 0;
+      return newPeopleEntering;
     }
   }
 

@@ -19,17 +19,19 @@ export function initView(distanceBetweenFloors) {
 export function updateFloorStats(elevator) {
   const node = document.querySelector(`#${elevator.name} .floor-container`);
   for (let i = 0; i < elevator.floorRequests.length; i++) {
-    console.log(node);
-
-    // const floorNode = node.querySelector(`[data-floor="${i}"]`);
-    // console.log(floorNode);
-
-    const countNode = node.querySelector(`#requestCount${i}`);
-    console.log(countNode);
-
-    countNode.textContent = "Requests: " + elevator.floorRequests[i].requests;
-    node.querySelector(`#waitCount${i}`).textContent = "Wait: " + elevator.floorRequests[i].waitTime;
+    const countNode = node.querySelector(`#waitingForCount${i}`);
+    countNode.textContent = "Waiting: " + elevator.floorRequests[i].waitingFor;
+    node.querySelector(`#waitCount${i}`).textContent = "Moves waited: " + elevator.floorRequests[i].reqBeforeServed;
+    node.querySelector(`#goingToCount${i}`).textContent = "Going: " + elevator.floorRequests[i].goingTo;
   }
+}
+
+export function removePeopleFromFloor(elevator, floor){
+  console.log("Resetting people on floor",floor);
+  
+  const node = document.querySelector(`#${elevator.name} .floor-container [data-floor="${floor}"]`);
+  node.textContent = ""
+  
 }
 
 export function updateElevatorStats(elevator) {}
@@ -44,7 +46,7 @@ export function resetElevator(elevator) {
   document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 615px`;
 }
 
-export function moveElevator(elevator, weight, distance) {
+export function moveElevator(elevator) {
   // console.log(weight, distance);
   // let prevValue = getComputedStyle(document.querySelector(`#look .elevator`)).translate.split(" ")[1];
   // prevValue = +prevValue.substring(0, prevValue.length - 2);
@@ -52,6 +54,7 @@ export function moveElevator(elevator, weight, distance) {
   // // const addedVal = distance * (100 / weight) + prevValue;
   // console.log("Added val:", addedVal, prevValue);
 
+  // 615px is start value - bottom floor
   document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 ${615 - elevator.currentHeight * METER_TO_PIXEL_VALUE}px`;
   document.querySelector(`#${elevator.name} .elevator`).textContent = elevator.currentFloor;
   // document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 ${400 - elevator.currentHeight}px`;
@@ -139,11 +142,12 @@ function initializeSingleElevator(elevator, distanceBetweenFloors) {
         "afterbegin",
         /*HTML*/ `
         <div class="fdistance" data-fdist="${i}">
-        <div class="requestCount" id="requestCount${i}">Requests: 0</div>
-        <div class="waitCount" id="waitCount${i}">Wait: 0</div>
+        <div class="waitingForCount" id="waitingForCount${i}">Waiting: 0</div>
+        <div class="goingToCount" id="goingToCount${i}">Going: 0</div>
+        <div class="waitCount" id="waitCount${i}">Moves waited: 0</div>
          ${distanceBetweenFloors[i]}m</div>
         <div class="floor" data-floor="${i}">
-         
+         </div>
          `
       );
       floorContainer.querySelector(`[data-fdist="${i}"`).style.setProperty("--FLOOR_HEIGHT", (distanceBetweenFloors[i] - 3) * METER_TO_PIXEL_VALUE + "px");
@@ -152,17 +156,18 @@ function initializeSingleElevator(elevator, distanceBetweenFloors) {
       floorContainer.insertAdjacentHTML(
         "afterbegin",
         /*HTML*/ `
-      <div class="requestCount" id="requestCount${i}">Requests: 0</div>
-      <div class="waitCount" id="waitCount${i}">Wait: 0</div>
+      <div class="waitingForCount" id="waitingForCount${i}">Waiting: 0</div>
+      <div class="goingToCount" id="goingToCount${i}">Going: 0</div>
+      <div class="waitCount" id="waitCount${i}">Moves waited: 0</div>
       <div class="floor" data-floor="${i}">
         </div>
         `
       );
     }
 
-    floorContainer.querySelector(`#requestCount${i}`).style.setProperty("--FLOOR_HEIGHT", distanceBetweenFloors[i] * -5 + "px");
+    floorContainer.querySelector(`#waitingForCount${i}`).style.setProperty("--FLOOR_HEIGHT", distanceBetweenFloors[i] * -5 + "px");
     floorContainer.querySelector(`#waitCount${i}`).style.setProperty("--FLOOR_HEIGHT", distanceBetweenFloors[i] * -5 + "px");
-    // floorContainer.querySelector(`#requestCount${i}`).style.setProperty("--FLOOR_HEIGHT", distanceBetweenFloors[i] * -5 + "px");
+    // floorContainer.querySelector(`#waitingForCount${i}`).style.setProperty("--FLOOR_HEIGHT", distanceBetweenFloors[i] * -5 + "px");
   }
   floorContainer.querySelector(".floor").classList.add("top-floor");
 }

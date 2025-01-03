@@ -23,7 +23,7 @@ const CONFIG = {
 };
 
 function start() {
-  view.initView(FLOOR_HEIGHT_IN_METERS)
+  view.initView(FLOOR_HEIGHT_IN_METERS);
 }
 
 function clearGameState() {
@@ -32,8 +32,10 @@ function clearGameState() {
 }
 
 export function startSimulation() {
+    console.log("Starting");
+    
   clearGameState();
-  view.resetElevators()
+  view.resetElevators();
   createElevatorInstances();
   clearTimeout(timer);
   for (let i = 0; i < 5; i++) {
@@ -54,7 +56,7 @@ function addWaitingPerson() {
   const floor = Math.floor(Math.random() * 5);
   view.addWaitingPersonToFloor(floor);
   for (const elevator of elevators) {
-    elevator.addRequest(floor);
+    elevator.addRequest(floor, true);
     view.updateFloorStats(elevator);
   }
 }
@@ -66,7 +68,7 @@ export function pauseGame() {
   } else {
     // lastTime has some catching up to do since the timeStamp from requestAnimationFrame() keeps running even when paused
     // Updating lastTime just before unpausing does the trick
-    lastTime = performance.now()
+    lastTime = performance.now();
     gameTick(lastTime);
     keepRandomlyAddingPeople();
   }
@@ -75,7 +77,7 @@ export function pauseGame() {
 
 let timer;
 function keepRandomlyAddingPeople() {
-  if (allSpawned()|| CONFIG.paused) {
+  if (allSpawned() || CONFIG.paused) {
     return false;
   } else if (Math.random() < 0.1) {
     addWaitingPerson();
@@ -83,15 +85,11 @@ function keepRandomlyAddingPeople() {
   timer = setTimeout(keepRandomlyAddingPeople, 500);
 }
 
-
-
 // Problem: Converting the height in meters to the translate value in px
 function moveElevator(elevator, deltaTime) {
+    // console.log("going to",elevator.nextFloor);
+    
   let distance = (elevator.speed / 1000) * deltaTime;
-//   console.log("current height", elevator.currentHeight);
-
-  //   console.log("Weight between current and next floor:", FLOOR_WEIGHTS[elevator.currentFloor][elevator.currentFloor + 1]);
-  const currentWeight = FLOOR_WEIGHTS[elevator.currentFloor][elevator.currentFloor + 1];
   if (elevator.currentFloor < elevator.nextFloor) {
     elevator.currentHeight += distance;
     distance *= -1;
@@ -104,7 +102,6 @@ function moveElevator(elevator, deltaTime) {
       elevator.currentHeight = HEIGHT_AT_EVERY_FLOOR[elevator.nextFloor];
     }
   } else {
-    
     elevator.currentHeight -= distance;
     if (elevator.currentHeight <= HEIGHT_AT_EVERY_FLOOR[elevator.currentFloor - 1]) {
       elevator.currentFloor--;
@@ -113,27 +110,37 @@ function moveElevator(elevator, deltaTime) {
       elevator.currentHeight = HEIGHT_AT_EVERY_FLOOR[elevator.nextFloor];
     }
   }
-  view.moveElevator(elevator, currentWeight, distance);
-//   console.log("current height", elevator.currentHeight);
+  view.moveElevator(elevator, distance);
+//   console.log(elevator.currentFloor, elevator.nextFloor);
+
+  if (elevator.currentFloor == elevator.nextFloor) {
+    const floorData = elevator.arrivedAtFloor();
+    view.updateFloorStats(elevator);
+    console.log("Arrived at floor!", floorData);
+    view.removePeopleFromFloor(elevator, elevator.currentFloor);
+  }
 }
-
-
 
 let lastTime = 0;
 function gameTick(timestamp) {
-//   console.log("game tick");
+    // console.log("game tick");
   if (!CONFIG.paused && !CONFIG.gameOver) {
     requestAnimationFrame(gameTick);
+  }
+  else {
+    console.log("Simulation is paused or over");
+    
   }
 
   const deltaTime = timestamp - lastTime;
   lastTime = timestamp;
   for (const elevator of elevators) {
-    if (elevator.nextFloor != null && elevator.nextFloor != elevator.currentFloor) {
+    if (elevator.nextFloor != null) {
+    // if (elevator.nextFloor != null && elevator.nextFloor != elevator.currentFloor) {
       moveElevator(elevator, deltaTime);
     } else if (elevator.hasRequests()) {
       elevator.next();
-      console.log("has request");
+        console.log("has request");
     }
     // No more requests and the elevator has arrived at its final destination
     else if (allSpawned()) {
