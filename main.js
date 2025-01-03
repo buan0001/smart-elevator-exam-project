@@ -1,3 +1,4 @@
+import ElevatorManager from "./ElevatorManager.js";
 import Look from "./implemenations/Look.js";
 import * as view from "./view.js";
 window.addEventListener("DOMContentLoaded", start);
@@ -15,7 +16,9 @@ const FLOOR_HEIGHT_IN_METERS = [10, 5, 15, 5];
 const HEIGHT_AT_EVERY_FLOOR = FLOOR_WEIGHTS[0];
 
 const CONFIG = {
-  gameOver: true,
+  isOver: true,
+  totalElevators: 1,
+  finishedElevators: 1,
   paused: false,
   peopleSpawned: 0,
   maxSpawn: 20,
@@ -27,13 +30,13 @@ function start() {
 }
 
 function clearGameState() {
-  CONFIG.gameOver = false;
+  CONFIG.isOver = false;
   CONFIG.peopleSpawned = 0;
 }
 
 export function startSimulation() {
-    console.log("Starting");
-    
+  console.log("Starting");
+
   clearGameState();
   view.resetElevators();
   createElevatorInstances();
@@ -45,23 +48,24 @@ export function startSimulation() {
   requestAnimationFrame(gameTick);
 }
 
-let elevators = [new Look("look", FLOOR_WEIGHTS)];
+let elevatorControllers = [new Look(FLOOR_WEIGHTS)];
+// let elevators = [new Look( FLOOR_WEIGHTS)];
 function createElevatorInstances() {
-  elevators = [];
-  elevators.push(new Look("look", FLOOR_WEIGHTS));
+  elevatorControllers = [];
+  elevatorControllers.push(new ElevatorManager(new Look(FLOOR_WEIGHTS)));
 }
 
 function addWaitingPerson() {
   CONFIG.peopleSpawned++;
   const floor = Math.floor(Math.random() * 5);
   view.addWaitingPersonToFloor(floor);
-  for (const elevator of elevators) {
-    elevator.addRequest(floor, true);
-    view.updateFloorStats(elevator);
+  for (const controller of elevatorControllers) {
+    controller.addRequest(floor, true);
+    view.updateFloorStats(controller.elevator);
   }
 }
 
-export function pauseGame() {
+export function togglePause() {
   CONFIG.paused = !CONFIG.paused;
   if (CONFIG.paused) {
     clearTimeout(timer);
@@ -86,13 +90,12 @@ function keepRandomlyAddingPeople() {
 }
 
 // Problem: Converting the height in meters to the translate value in px
-function moveElevator(elevator, deltaTime) {
-    // console.log("going to",elevator.nextFloor);
-    
-  let distance = (elevator.speed / 1000) * deltaTime;
+export function moveElevator(controller, deltaTime) {
+  const elevator = controller.elevator;
+  const distance = (elevator.speed / 1000) * deltaTime;
+
   if (elevator.currentFloor < elevator.nextFloor) {
     elevator.currentHeight += distance;
-    distance *= -1;
     // Increment the currentFloor every time we pass a floor
     if (elevator.currentHeight >= HEIGHT_AT_EVERY_FLOOR[elevator.currentFloor + 1]) {
       elevator.currentFloor++;
@@ -111,42 +114,28 @@ function moveElevator(elevator, deltaTime) {
     }
   }
   view.moveElevator(elevator, distance);
-//   console.log(elevator.currentFloor, elevator.nextFloor);
 
   if (elevator.currentFloor == elevator.nextFloor) {
-    const floorData = elevator.arrivedAtFloor();
+    console.log("Arrived at floor!", elevator.currentFloor);
+    controller.elevatorReachedFloor();
     view.updateFloorStats(elevator);
-    console.log("Arrived at floor!", floorData);
     view.removePeopleFromFloor(elevator, elevator.currentFloor);
   }
 }
 
 let lastTime = 0;
 function gameTick(timestamp) {
-    // console.log("game tick");
-  if (!CONFIG.paused && !CONFIG.gameOver) {
+  // console.log("game tick");
+  if (!CONFIG.paused && !CONFIG.isOver) {
     requestAnimationFrame(gameTick);
-  }
-  else {
+  } else {
     console.log("Simulation is paused or over");
-    
   }
 
   const deltaTime = timestamp - lastTime;
   lastTime = timestamp;
-  for (const elevator of elevators) {
-    if (elevator.nextFloor != null) {
-    // if (elevator.nextFloor != null && elevator.nextFloor != elevator.currentFloor) {
-      moveElevator(elevator, deltaTime);
-    } else if (elevator.hasRequests()) {
-      elevator.next();
-        console.log("has request");
-    }
-    // No more requests and the elevator has arrived at its final destination
-    else if (allSpawned()) {
-      CONFIG.gameOver = true;
-      console.log("game over!");
-    }
+  for (const controller of elevatorControllers) {
+    controller.handleTick(deltaTime);
   }
 }
 
@@ -154,9 +143,16 @@ export function getTotalFloors() {
   return CONFIG.totalFloors;
 }
 export function isGameOver() {
-  return CONFIG.gameOver;
+  return CONFIG.isOver;
 }
 
-function allSpawned() {
+export function allSpawned() {
   return CONFIG.maxSpawn <= CONFIG.peopleSpawned;
+}
+
+export function incrementElevatorFinished() {
+  CONFIG.finishedElevators++;
+  if (CONFIG.finishedElevators >= CONFIG.totalElevators) {
+    CONFIG.isOver = true;
+  }
 }

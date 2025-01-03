@@ -55,11 +55,7 @@ export default class Elevator {
     const floorDataCopy = { ...this.floorRequests[floorNum] };
     // Increment the wait counter for every floor that has a pending request
     for (let i = 0; i < this.floorAmt; i++) {
-      console.log("Outer wait");
-      
       if (this._totalReq(i) > 0) {
-        console.log("Adding wait to",i);
-        
         this.floorRequests[i].reqBeforeServed++;
       }
     }

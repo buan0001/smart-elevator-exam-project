@@ -1,11 +1,9 @@
 import Elevator from "../Elevator.js";
 
 export default class Look extends Elevator {
+  name = "look"
   lastDirectionUp = true;
-  constructor(name, floorWeights) {
-    super(floorWeights);
-    this.name = name;
-  }
+
 
   next() {
     if (!this.hasRequests()) {

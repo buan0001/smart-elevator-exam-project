@@ -9,7 +9,7 @@ const elevators = [
     name: "look",
   },
 ];
-const METER_TO_PIXEL_VALUE =  50/3
+const METER_TO_PIXEL_VALUE = 50 / 3;
 
 export function initView(distanceBetweenFloors) {
   initializeElevators(distanceBetweenFloors);
@@ -26,12 +26,11 @@ export function updateFloorStats(elevator) {
   }
 }
 
-export function removePeopleFromFloor(elevator, floor){
-  console.log("Resetting people on floor",floor);
-  
+export function removePeopleFromFloor(elevator, floor) {
+  console.log("Resetting people on floor", floor);
+
   const node = document.querySelector(`#${elevator.name} .floor-container [data-floor="${floor}"]`);
-  node.textContent = ""
-  
+  node.textContent = "";
 }
 
 export function updateElevatorStats(elevator) {}
@@ -86,7 +85,7 @@ function addEventListeners() {
   });
   const pauseBtn = document.querySelector("#pause-btn");
   pauseBtn.addEventListener("click", () => {
-    if (main.pauseGame()) {
+    if (main.togglePause()) {
       pauseBtn.innerHTML = "Resume";
     } else {
       pauseBtn.innerHTML = "Pause";
