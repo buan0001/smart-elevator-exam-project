@@ -23,10 +23,7 @@ const CONFIG = {
 };
 
 function start() {
-  view.initView(FLOOR_HEIGHT_IN_METERS);
-  startSimulation()
- view.moveElevator(elevators[0], 2, -1);
- setTimeout(newElevatorMove, 500);
+  view.initView(FLOOR_HEIGHT_IN_METERS)
 }
 
 function clearGameState() {
@@ -36,6 +33,7 @@ function clearGameState() {
 
 export function startSimulation() {
   clearGameState();
+  view.resetElevators()
   createElevatorInstances();
   clearTimeout(timer);
   for (let i = 0; i < 5; i++) {
@@ -43,7 +41,7 @@ export function startSimulation() {
   }
 
   keepRandomlyAddingPeople();
-//   requestAnimationFrame(gameTick);
+  requestAnimationFrame(gameTick);
 }
 
 let elevators = [new Look("look", FLOOR_WEIGHTS)];
@@ -78,7 +76,7 @@ export function pauseGame() {
 
 let timer;
 function keepRandomlyAddingPeople() {
-  if (CONFIG.maxSpawn <= CONFIG.peopleSpawned) {
+  if (CONFIG.maxSpawn <= CONFIG.peopleSpawned || CONFIG.paused) {
     return false;
   } else if (Math.random() < 0.1) {
     addWaitingPerson();
@@ -86,19 +84,18 @@ function keepRandomlyAddingPeople() {
   timer = setTimeout(keepRandomlyAddingPeople, 500);
 }
 
-function newElevatorMove(){
- view.moveElevator(elevators[0], 2, -2);
-}
+
 
 // Problem: Converting the height in meters to the translate value in px
 function moveElevator(elevator, deltaTime) {
-  const distance = (elevator.speed / 1000) * deltaTime;
-  console.log("current height", elevator.currentHeight);
+  let distance = (elevator.speed / 1000) * deltaTime;
+//   console.log("current height", elevator.currentHeight);
 
   //   console.log("Weight between current and next floor:", FLOOR_WEIGHTS[elevator.currentFloor][elevator.currentFloor + 1]);
   const currentWeight = FLOOR_WEIGHTS[elevator.currentFloor][elevator.currentFloor + 1];
   if (elevator.currentFloor < elevator.nextFloor) {
     elevator.currentHeight += distance;
+    distance *= -1;
     // Increment the currentFloor every time we pass a floor
     if (elevator.currentHeight >= HEIGHT_AT_EVERY_FLOOR[elevator.currentFloor + 1]) {
       elevator.currentFloor++;
@@ -108,6 +105,7 @@ function moveElevator(elevator, deltaTime) {
       elevator.currentHeight = HEIGHT_AT_EVERY_FLOOR[elevator.nextFloor];
     }
   } else {
+    
     elevator.currentHeight -= distance;
     if (elevator.currentHeight <= HEIGHT_AT_EVERY_FLOOR[elevator.currentFloor - 1]) {
       elevator.currentFloor--;
@@ -116,7 +114,9 @@ function moveElevator(elevator, deltaTime) {
       elevator.currentHeight = HEIGHT_AT_EVERY_FLOOR[elevator.nextFloor];
     }
   }
-//   view.moveElevator(elevator, currentWeight);
+//   console.log("current weight",currentWeight);
+  
+  view.moveElevator(elevator, currentWeight, distance);
 //   console.log("current height", elevator.currentHeight);
 
 
@@ -124,13 +124,13 @@ function moveElevator(elevator, deltaTime) {
 
 let lastTime = 0;
 function gameTick(timestamp) {
-  // console.log("game tick");
-//   if (!CONFIG.paused && !CONFIG.gameOver) {
-//     requestAnimationFrame(gameTick);
-//   }
+//   console.log("game tick");
+  if (!CONFIG.paused && !CONFIG.gameOver) {
+    requestAnimationFrame(gameTick);
+  }
 
-//   const deltaTime = timestamp - lastTime;
-//   lastTime = timestamp;
+  const deltaTime = timestamp - lastTime;
+  lastTime = timestamp;
   for (const elevator of elevators) {
     if (elevator.nextFloor != null && elevator.nextFloor != elevator.currentFloor) {
       moveElevator(elevator, deltaTime);

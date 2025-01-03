@@ -2,11 +2,11 @@ import * as main from "./main.js";
 const elevators = [
   {
     algorithmName: "Shortest seek first",
-    id: "ssf",
+    name: "ssf",
   },
   {
     algorithmName: "LOOK",
-    id: "look",
+    name: "look",
   },
 ];
 
@@ -26,32 +26,39 @@ export function updateFloorStats(elevator) {
 
 export function updateElevatorStats(elevator) {}
 
-export function moveElevator(elevator, duration, floorChanges) {
-  console.log(elevator);
+export function resetElevators(){
+  for (const elevator of elevators) {
+    resetElevator(elevator)
+  }
+}
+
+export function resetElevator(elevator){
+  document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 400px`;
+}
+
+export function moveElevator(elevator, weight, distance) {
+  console.log(weight, distance);
+  let prevValue = getComputedStyle(document.querySelector(`#look .elevator`)).translate.split(" ")[1];
+  prevValue = +prevValue.substring(0, prevValue.length - 2);
+  const addedVal = distance * (400/35 / (100 / weight)) + prevValue;
+  // const addedVal = distance * (100 / weight) + prevValue;
+  console.log("Added val:", addedVal, prevValue);
   
-    // document.querySelector(`#elevator-${elevator.name}`).style.setProperty(`--ANIMATION-TIME`, time + "s");
-    // document.querySelector(`#elevator-${elevator.name}`).classList.add(className)
-    // console.log(elevator.currentHeight, elevator.currentHeight*8.57);
-    // console.log(elevator.currentHeight, elevator.currentHeight*11.42);
-    
-  // document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 ${400 - elevator.currentHeight*11.42}px`;
-  // document.querySelector(`#${elevator.name} .elevator`).textContent = elevator.currentFloor;
+  document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 ${addedVal}px`;
+  document.querySelector(`#${elevator.name} .elevator`).textContent = elevator.currentFloor;
 
   // document.querySelector(`#${elevator.name} .elevator`).style.transition = `top 5s`;
   // document.querySelector(`#${elevator.name} .elevator`).style.translate  = `0 ${targetFloor*200}px`;
-  const elevatorNode = document.querySelector(`#${elevator.name} .elevator`)
-  elevatorNode.style.transition = `transform ${duration}s linear`;
-  elevatorNode.style.transform = `translateY(${elevator.currentFloor - elevator.nextFloor * 100}px)`;
+  // const elevatorNode = document.querySelector(`#${elevator.name} .elevator`)
+  // elevatorNode.style.transition = `transform ${duration}s linear`;
+  // elevatorNode.style.transform = `translateY(${elevator.currentFloor - elevator.nextFloor * 100}px)`;
   // elevatorNode.style.transform = `translateY(${floorChanges * 100}px)`;
-  elevatorNode.addEventListener("transitionend", () => {
-    console.log("transition has ended");
-    
-  })
+
 }
 
 export function addWaitingPersonToFloor(floorNumber) {
   for (const elevator of elevators) {
-    const root = document.querySelector(`#${elevator.id}`);
+    const root = document.querySelector(`#${elevator.name}`);
     const floor = root.querySelector(`[data-floor='${floorNumber}']`);
     floor.insertAdjacentHTML("beforeend", `<div class="person"></div>`);
   }
@@ -96,7 +103,7 @@ function initializeSingleElevator(elevator, distanceBetweenFloors) {
   container.insertAdjacentHTML(
     "beforeend",
     /*HTML*/ `
-    <div id=${elevator.id}>
+    <div id=${elevator.name}>
     <div class="elevator-header">
       <h2>${elevator.algorithmName} </h2>
     </div>
@@ -107,7 +114,7 @@ function initializeSingleElevator(elevator, distanceBetweenFloors) {
         <div class="stat">Longest wait:<span id="lw"></span></div>
       </div>
       <div class="elevator-container">
-        <div class="elevator-tube"><div class="elevator" id="elevator-${elevator.id}">0</div></div>
+        <div class="elevator-tube"><div class="elevator" id="elevator-${elevator.name}">0</div></div>
           <div class="floor-container">    
           </div>
         </div>
@@ -115,7 +122,7 @@ function initializeSingleElevator(elevator, distanceBetweenFloors) {
         `
   );
 
-  const floorContainer = container.querySelector(`#${elevator.id} .floor-container`);
+  const floorContainer = container.querySelector(`#${elevator.name} .floor-container`);
   console.log(floorContainer);
 
   for (let i = 0; i < 5; i++) {
