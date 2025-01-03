@@ -21,56 +21,69 @@ body {
 
 .elevator {
   background-image: url("/smart-elevator/images/elevator.png");
-  width: 8em;
+  width: 4em;
   aspect-ratio: 1/1;
   background-size: 100%;
   /* background-repeat: no-repeat; */
   height: fit-content;
   position: absolute;
   /* y: 100px; */
-  translate: 0 400px;
+  translate: 0 615px;
   /* translate: -7.5em 33em; */
+  text-align: center;
 }
 
 .elevator-tube {
-  height: 36em;
-  width: 8em;
+  height: 700px;
+  /* height: 36em; */
+  width: 4em;
   background-color: brown;
 }
 
 .floor {
   display: flex;
   width: 20em;
+  /* height: 100px; */
   height: 50px;
   border-bottom: 2px black solid;
   border-right: 2px brown dotted;
   box-sizing: border-box;
+  justify-content: start;
+  align-content:baseline;
+  /* text-align: right; */
+  /* text-justify: ; */
+  /* flex-direction: row-reverse; */
 }
 
 .top-floor {
   border-right: 0;
+  margin-top: 35px;
 }
 
 .fdistance {
-  height: 50px;
+  /* display: flex; */
+  height: var(--FLOOR_HEIGHT);
   border-right: 2px brown dotted;
   text-align: end;
-  align-content: center;
+
 }
 
 .requestCount {
   position: absolute;
-  translate: 5px -50px;
+  /* translate: 5px var(--FLOOR_HEIGHT); */
   border: 1px black;
   border-style: groove;
   border-radius: 0.5em;
   padding: 0.2em;
+  margin:0.1em;
   background-color: rgb(162, 233, 129);
 }
 .waitCount {
   text-align: end;
   position: absolute;
-  translate: 110px -50px;
+  translate: 100px 0;
+  /* translate: 110px var(--FLOOR_HEIGHT);; */
+  margin:0.1em;
   border: 1px black;
   border-style: solid;
   border-radius: 0.5em;
@@ -88,7 +101,8 @@ body {
 }
 
 .floor-container {
-  margin-top: 5em;
+  margin-top: 1em;
+  margin-bottom: 2em;
 }
 
 .elevator-container {

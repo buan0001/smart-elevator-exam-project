@@ -39,7 +39,6 @@ export function startSimulation() {
   for (let i = 0; i < 5; i++) {
     addWaitingPerson();
   }
-
   keepRandomlyAddingPeople();
   requestAnimationFrame(gameTick);
 }
@@ -76,7 +75,7 @@ export function pauseGame() {
 
 let timer;
 function keepRandomlyAddingPeople() {
-  if (CONFIG.maxSpawn <= CONFIG.peopleSpawned || CONFIG.paused) {
+  if (allSpawned()|| CONFIG.paused) {
     return false;
   } else if (Math.random() < 0.1) {
     addWaitingPerson();
@@ -114,13 +113,11 @@ function moveElevator(elevator, deltaTime) {
       elevator.currentHeight = HEIGHT_AT_EVERY_FLOOR[elevator.nextFloor];
     }
   }
-//   console.log("current weight",currentWeight);
-  
   view.moveElevator(elevator, currentWeight, distance);
 //   console.log("current height", elevator.currentHeight);
-
-
 }
+
+
 
 let lastTime = 0;
 function gameTick(timestamp) {
@@ -139,7 +136,7 @@ function gameTick(timestamp) {
       console.log("has request");
     }
     // No more requests and the elevator has arrived at its final destination
-    else {
+    else if (allSpawned()) {
       CONFIG.gameOver = true;
       console.log("game over!");
     }
@@ -151,4 +148,8 @@ export function getTotalFloors() {
 }
 export function isGameOver() {
   return CONFIG.gameOver;
+}
+
+function allSpawned() {
+  return CONFIG.maxSpawn <= CONFIG.peopleSpawned;
 }
