@@ -49,7 +49,7 @@ body {
   border-right: 2px brown dotted;
   box-sizing: border-box;
   justify-content: start;
-  align-content:baseline;
+  align-content: baseline;
   /* text-align: right; */
   /* text-justify: ; */
   /* flex-direction: row-reverse; */
@@ -65,30 +65,27 @@ body {
   height: var(--FLOOR_HEIGHT);
   border-right: 2px brown dotted;
   text-align: end;
-
 }
 
-.waitingForCount, .waitCount, .goingToCount {
+.waitingForCount,
+.waitCount,
+.goingToCount {
   position: absolute;
   /* translate: 5px var(--FLOOR_HEIGHT); */
   border: 1px black;
   border-style: groove;
   border-radius: 0.5em;
   padding: 0.2em;
-  margin:0.1em;
-  background-color: rgb(226, 210, 66);
+  margin: 0.1em;
+  background-color: rgb(219, 235, 234, 0.6);
 }
 .waitCount {
   translate: 150px 0;
   /* translate: 110px var(--FLOOR_HEIGHT);; */
-  background-color: rgb(194, 236, 233);
 }
-.goingToCount{
+.goingToCount {
   translate: 80px 0;
   /* translate: 110px var(--FLOOR_HEIGHT);; */
-  background-color: rgb(226, 210, 66);
-  background-color: rgb(162, 233, 129);
-
 }
 
 .elevator-header {
@@ -110,9 +107,15 @@ body {
   position: relative;
 }
 
+.elevator-stat-wrapper {
+  display: flex;
+  flex-direction: row;
+}
+
 .stat-container {
   display: flex;
-  justify-content: space-evenly;
+  flex-direction: column;
+  /* justify-content: space-evenly; */
   align-content: center;
   max-width: 30vw;
   flex-wrap: wrap;
@@ -144,10 +147,10 @@ body {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black background */
   color: white;
-  display: flex;
+  /* display: flex;
   justify-content: center;
-  align-items: center;
-  font-size: 2em;
+  align-items: center; */
+  /* font-size: 1em; */
   z-index: 1000; /* Ensure it is on top of other elements */
   visibility: hidden; /* Initially hidden */
   opacity: 0; /* Initially transparent */
@@ -159,10 +162,13 @@ body {
   opacity: 1; /* Fully opaque */
 }
 
-
-
-
-
+.finish-stat-container {
+  /* display: flex; */
+  border: 0.5px whitesmoke inset;
+  border-radius: 2em;
+  margin: 2em;
+  background-color: #007bff1a;
+}
 
 button {
   /* padding: 5px 10px; */
@@ -203,6 +209,9 @@ h5,
 h6 {
   margin: 0.5em 0;
   font-weight: bold;
+}
+h1 {
+  border-bottom: 2px black solid;
 }
 
 p {

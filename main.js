@@ -1,5 +1,6 @@
 import ElevatorManager from "./ElevatorManager.js";
 import Look from "./implemenations/Look.js";
+import ShortestSeekFirst from "./implemenations/ShortestSeekFirst.js";
 import * as view from "./view.js";
 window.addEventListener("DOMContentLoaded", start);
 
@@ -27,7 +28,7 @@ const CONFIG = {
 
 function start() {
   view.initView(FLOOR_HEIGHT_IN_METERS);
-  view.displayElevatorFinished({name:"look"})
+  view.updateDisplayedElevators()
 }
 
 function clearGameState() {
@@ -55,6 +56,8 @@ let elevatorControllers = [new Look(FLOOR_WEIGHTS)];
 function createElevatorInstances() {
   elevatorControllers = [];
   elevatorControllers.push(new ElevatorManager(new Look(FLOOR_WEIGHTS)));
+  elevatorControllers.push(new ElevatorManager(new ShortestSeekFirst(FLOOR_WEIGHTS)));
+  CONFIG.totalElevators = elevatorControllers.length
 }
 
 function addWaitingPerson() {
@@ -93,8 +96,10 @@ function keepRandomlyAddingPeople() {
 
 // Problem: Converting the height in meters to the translate value in px
 export function moveElevator(controller, deltaTime) {
-  const elevator = controller.elevator;
-  const distance = (elevator.speed / 1000) * deltaTime;
+    
+    const elevator = controller.elevator;
+    const distance = (elevator.speed / 1000) * deltaTime;
+    console.log("Delta time:",deltaTime, "distance:",distance);
 
   if (elevator.currentFloor < elevator.nextFloor) {
     elevator.currentHeight += distance;
@@ -128,7 +133,7 @@ export function moveElevator(controller, deltaTime) {
 
 let lastTime = 0;
 function gameTick(timestamp) {
-  // console.log("game tick");
+ 
   if (!CONFIG.paused && !CONFIG.isOver) {
     requestAnimationFrame(gameTick);
   } else {
@@ -154,10 +159,10 @@ export function allSpawned() {
   return CONFIG.maxSpawn <= CONFIG.peopleSpawned;
 }
 
-export function incrementElevatorFinished(elevator) {
+export function incrementElevatorFinished(elevatorController) {
   CONFIG.finishedElevators++;
   if (CONFIG.finishedElevators >= CONFIG.totalElevators) {
     CONFIG.isOver = true;
   }
-  view.displayElevatorFinished(elevator)
+  view.displayElevatorFinished(elevatorController);
 }

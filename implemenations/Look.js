@@ -31,23 +31,4 @@ export default class Look extends Elevator {
     console.log("Next:", this.nextFloor);
     return this.nextFloor;
   }
-
-  // Could be implemented with a binary tree
-  findNextRequestUp() {
-    for (let i = 1; i < this.floorRequests.length - this.currentFloor; i++) {
-      if (this.totalReq(this.currentFloor + i) > 0) {
-        return this.currentFloor + i;
-      }
-    }
-    return null;
-  }
-
-  findNextRequestDown() {
-    for (let i = 1; i <= this.currentFloor; i++) {
-      if (this.totalReq(this.currentFloor - i) > 0) {
-        return this.currentFloor - i;
-      }
-    }
-    return null;
-  }
 }

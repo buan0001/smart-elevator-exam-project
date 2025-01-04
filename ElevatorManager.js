@@ -100,7 +100,6 @@ export default class ElevatorManager {
   }
 
   updateWaits(floor) {
-    let requestsOnFloor = this.elevator.totalReq(floor);
     // Index 0 always has the person who waited the longest
     if (this.currentWaitTimes[floor].outside[0] > this.longestWaitOutside) {
       this.longestWaitOutside = this.currentWaitTimes[floor].outside[0];
@@ -120,13 +119,11 @@ export default class ElevatorManager {
         this.currentWaitTimes[i].inside.forEach((entry) => {
           this.totalWaitInside += entry;
           this.peopleInsideElevator--;
-          // this.insideRequests++;
         });
         this.currentWaitTimes[i].outside.forEach((entry) => {
           this.totalWaitOutside += entry;
-          // this.outsideRequests++;
         });
-        // Emptying the arrays (the lazy way)
+        // Emptying the arrays, making room for new requests (the lazy way)
         this.currentWaitTimes[i] = { inside: [], outside: [] };
       }
     }

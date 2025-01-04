@@ -1,17 +1,16 @@
 export default class Elevator {
-  name;
   // Array of objects with following properties: (int) goingTo, (int) waitingFor, (int) reqBeforeServed
   floorRequests;
   // 2d array of graph weights
   floorWeights; // Let controller keep track of the actual length between floors - here we only need the weights
   currentRequestAmount = 0;
- 
   currentHeight = 0;
+  isMoving = false;
   currentFloor = 0;
   nextFloor = null;
   speed = 6; // meters per second
 
-  constructor(floorWeights, startFloor = 0, currentHeight = 0) {
+  constructor(floorWeights, startFloor = 0) {
     this.floorWeights = floorWeights;
     // We always keep the floorRequests at max length so we can use the array indices as floors
     this.floorRequests = new Array(floorWeights.length);
@@ -21,7 +20,6 @@ export default class Elevator {
     }
 
     this.currentFloor = startFloor;
-    this.currentHeight = currentHeight;
   }
 
   next() {
@@ -39,8 +37,6 @@ export default class Elevator {
     return this.floorRequests.length;
   }
 
-
-
   // Changes the currentfloor and increments the wait counter for every other request.
   // Returns: amountOfPeople who entered the elevator
   // Returns: { reqBeforeServed, requests }
@@ -53,7 +49,7 @@ export default class Elevator {
       }
     }
     this.currentFloor = floorNum;
-    return this.removeRequests(floorNum)
+    return this.removeRequests(floorNum);
     // const peopleEnteringFromFloor = this.removeRequests(floorNum);
     // // Each person who entered the elevator will want to go to a random floor
     // // Could weigh the floors but not for now
@@ -76,7 +72,6 @@ export default class Elevator {
         this.floorRequests[floorNum].goingTo++;
       }
       this.currentRequestAmount++;
-      
     }
   }
 
@@ -95,5 +90,23 @@ export default class Elevator {
 
   isValidRequest(floorNumber) {
     return floorNumber >= 0 && floorNumber < this.floorRequests.length;
+  }
+
+  findNextRequestUp() {
+    for (let i = 1; i < this.floorRequests.length - this.currentFloor; i++) {
+      if (this.totalReq(this.currentFloor + i) > 0) {
+        return this.currentFloor + i;
+      }
+    }
+    return null;
+  }
+
+  findNextRequestDown() {
+    for (let i = 1; i <= this.currentFloor; i++) {
+      if (this.totalReq(this.currentFloor - i) > 0) {
+        return this.currentFloor - i;
+      }
+    }
+    return null;
   }
 }
