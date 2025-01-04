@@ -16,9 +16,9 @@ const FLOOR_HEIGHT_IN_METERS = [10, 5, 15, 5];
 const HEIGHT_AT_EVERY_FLOOR = FLOOR_WEIGHTS[0];
 
 const CONFIG = {
-  isOver: true,
+  isOver: false,
   totalElevators: 1,
-  finishedElevators: 1,
+  finishedElevators: 0,
   paused: false,
   peopleSpawned: 0,
   maxSpawn: 20,
@@ -27,11 +27,13 @@ const CONFIG = {
 
 function start() {
   view.initView(FLOOR_HEIGHT_IN_METERS);
+  view.displayElevatorFinished({name:"look"})
 }
 
 function clearGameState() {
   CONFIG.isOver = false;
   CONFIG.peopleSpawned = 0;
+  CONFIG.finishedElevators = 0;
 }
 
 export function startSimulation() {
@@ -117,8 +119,9 @@ export function moveElevator(controller, deltaTime) {
 
   if (elevator.currentFloor == elevator.nextFloor) {
     console.log("Arrived at floor!", elevator.currentFloor);
-    controller.elevatorReachedFloor();
+    controller.elevatorReachedFloor(elevator.nextFloor);
     view.updateFloorStats(elevator);
+    view.updateElevatorStats(controller)
     view.removePeopleFromFloor(elevator, elevator.currentFloor);
   }
 }
@@ -137,6 +140,7 @@ function gameTick(timestamp) {
   for (const controller of elevatorControllers) {
     controller.handleTick(deltaTime);
   }
+
 }
 
 export function getTotalFloors() {
@@ -150,9 +154,10 @@ export function allSpawned() {
   return CONFIG.maxSpawn <= CONFIG.peopleSpawned;
 }
 
-export function incrementElevatorFinished() {
+export function incrementElevatorFinished(elevator) {
   CONFIG.finishedElevators++;
   if (CONFIG.finishedElevators >= CONFIG.totalElevators) {
     CONFIG.isOver = true;
   }
+  view.displayElevatorFinished(elevator)
 }

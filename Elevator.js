@@ -1,11 +1,11 @@
 export default class Elevator {
   name;
-  // Array of objects with following properties: (int) amountOfPeopleWaiting, (int) reqBeforeServed
+  // Array of objects with following properties: (int) goingTo, (int) waitingFor, (int) reqBeforeServed
   floorRequests;
   // 2d array of graph weights
   floorWeights; // Let controller keep track of the actual length between floors - here we only need the weights
   currentRequestAmount = 0;
-  totalRequestAmount = 0;
+ 
   currentHeight = 0;
   currentFloor = 0;
   nextFloor = null;
@@ -32,48 +32,41 @@ export default class Elevator {
     return this.currentRequestAmount > 0;
   }
 
-  _totalReq(floor) {
+  totalReq(floor) {
     return this.floorRequests[floor].goingTo + this.floorRequests[floor].waitingFor;
   }
   get floorAmt() {
     return this.floorRequests.length;
   }
 
-  arrayWithoutFloor(floorNum) {
-    const floorArr = [];
-    for (let i = 0; i < this.floorAmt; i++) {
-      if (i != floorNum) {
-        floorArr.push(i);
-      }
-    }
-    return floorArr;
-  }
+
 
   // Changes the currentfloor and increments the wait counter for every other request.
+  // Returns: amountOfPeople who entered the elevator
   // Returns: { reqBeforeServed, requests }
   arrivedAtFloor(floorNum = this.nextFloor) {
-    const floorDataCopy = { ...this.floorRequests[floorNum] };
+    // const floorDataCopy = { ...this.floorRequests[floorNum] };
     // Increment the wait counter for every floor that has a pending request
     for (let i = 0; i < this.floorAmt; i++) {
-      if (this._totalReq(i) > 0) {
+      if (this.totalReq(i) > 0) {
         this.floorRequests[i].reqBeforeServed++;
       }
     }
     this.currentFloor = floorNum;
-    const peopleEnteringFromFloor = this.removeRequests(floorNum);
-    // Each person who entered the elevator will want to go to a random floor
-    // Could weigh the floors but not for now
-    const floorArr = this.arrayWithoutFloor(floorNum);
-    for (let i = 0; i < peopleEnteringFromFloor; i++) {
-      const temp = floorArr[Math.floor(Math.random() * (this.floorAmt - 1))];
-      console.log("Person entering the elevator going to", temp);
+    return this.removeRequests(floorNum)
+    // const peopleEnteringFromFloor = this.removeRequests(floorNum);
+    // // Each person who entered the elevator will want to go to a random floor
+    // // Could weigh the floors but not for now
+    // const floorArr = this.arrayWithoutFloor(floorNum);
+    // for (let i = 0; i < peopleEnteringFromFloor; i++) {
+    //   const temp = floorArr[Math.floor(Math.random() * (this.floorAmt - 1))];
+    //   console.log("Person entering the elevator going to", temp);
 
-      this.addRequest(temp);
-    }
-    this.next();
-    return floorDataCopy;
+    //   this.addRequest(temp);
+    // }
+    // this.next();
+    // return floorDataCopy;
   }
-
 
   addRequest(floorNum, isWaitingForElevator) {
     if (this.isValidRequest(floorNum)) {
@@ -83,14 +76,14 @@ export default class Elevator {
         this.floorRequests[floorNum].goingTo++;
       }
       this.currentRequestAmount++;
-      this.totalRequestAmount++;
+      
     }
   }
 
   // Resets the requests on the given floor.
   removeRequests(floorNum) {
     if (this.isValidRequest(floorNum)) {
-      this.currentRequestAmount -= this._totalReq(floorNum);
+      this.currentRequestAmount -= this.totalReq(floorNum);
       // We remove every request at the same time, since they're only ever removed upon reaching the desired floor
       this.floorRequests[floorNum].reqBeforeServed = 0;
       const newPeopleEntering = this.floorRequests[floorNum].waitingFor;

@@ -1,19 +1,18 @@
 import Elevator from "../Elevator.js";
 
 export default class Look extends Elevator {
-  name = "look"
+  name = "look";
   lastDirectionUp = true;
-
 
   next() {
     if (!this.hasRequests()) {
-      console.log("No requests, skipping");
-      
+      console.log("No requests, please stop calling me");
+
       this.nextFloor = null;
     }
     // In case the elevator is idle and people arrive on it's current floor - we need to let them in!
-    else if (this._totalReq(this.currentFloor) > 0) {
-      console.log("Returning the same floor");
+    else if (this.totalReq(this.currentFloor) > 0) {
+      // console.log("Returning the same floor");
       this.nextFloor = this.currentFloor;
     } else {
       let nextScan = this.lastDirectionUp ? this.findNextRequestUp.bind(this) : this.findNextRequestDown.bind(this);
@@ -26,8 +25,7 @@ export default class Look extends Elevator {
       } else {
         this.nextFloor = tempNext;
       }
-      console.log("Setting floor after scan");
-      
+      // console.log("Setting floor after scan");
     }
 
     console.log("Next:", this.nextFloor);
@@ -36,11 +34,8 @@ export default class Look extends Elevator {
 
   // Could be implemented with a binary tree
   findNextRequestUp() {
-    console.log("Scanning up");
-
     for (let i = 1; i < this.floorRequests.length - this.currentFloor; i++) {
-      if (this._totalReq(this.currentFloor + i) > 0) {
-        // if (this.floorRequests[this.currentFloor + i].requests) {
+      if (this.totalReq(this.currentFloor + i) > 0) {
         return this.currentFloor + i;
       }
     }
@@ -48,13 +43,8 @@ export default class Look extends Elevator {
   }
 
   findNextRequestDown() {
-    console.log("Scanning down");
-    // console.log(this.currentFloor);
-    // console.log(this.floorRequests);
-
     for (let i = 1; i <= this.currentFloor; i++) {
-      if (this._totalReq(this.currentFloor - i) > 0) {
-        // if (this.floorRequests[this.currentFloor - i].requests) {
+      if (this.totalReq(this.currentFloor - i) > 0) {
         return this.currentFloor - i;
       }
     }

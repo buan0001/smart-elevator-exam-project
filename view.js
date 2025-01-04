@@ -27,13 +27,24 @@ export function updateFloorStats(elevator) {
 }
 
 export function removePeopleFromFloor(elevator, floor) {
-  console.log("Resetting people on floor", floor);
-
   const node = document.querySelector(`#${elevator.name} .floor-container [data-floor="${floor}"]`);
   node.textContent = "";
 }
 
-export function updateElevatorStats(elevator) {}
+export function updateElevatorStats(elevatorController) {
+  const containerNode = document.querySelector(`#${elevatorController.elevator.name}`);
+ 
+  containerNode.querySelector("#tw").textContent = elevatorController.totalWait;
+  containerNode.querySelector("#aw").textContent = elevatorController.averageWait.toFixed(2);
+  containerNode.querySelector("#lw").textContent = elevatorController.longestWait;
+  containerNode.querySelector("#tr").textContent = elevatorController.totalRequests;
+  containerNode.querySelector(".people-count").textContent = elevatorController.peopleInsideElevator;
+}
+
+export function displayElevatorFinished(elevator){
+  const node = document.querySelector(`#${elevator.name}`)
+  node.querySelector(".finish-overlay").classList.add("show");
+}
 
 export function resetElevators() {
   for (const elevator of elevators) {
@@ -43,28 +54,13 @@ export function resetElevators() {
 
 export function resetElevator(elevator) {
   document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 615px`;
+   const node = document.querySelector(`#${elevator.name}`)
+  node.querySelector(".finish-overlay").classList.remove("show")
 }
 
 export function moveElevator(elevator) {
-  // console.log(weight, distance);
-  // let prevValue = getComputedStyle(document.querySelector(`#look .elevator`)).translate.split(" ")[1];
-  // prevValue = +prevValue.substring(0, prevValue.length - 2);
-  // // const addedVal = distance * (400 / 35 / (100 / weight)) + prevValue;
-  // // const addedVal = distance * (100 / weight) + prevValue;
-  // console.log("Added val:", addedVal, prevValue);
-
-  // 615px is start value - bottom floor
   document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 ${615 - elevator.currentHeight * METER_TO_PIXEL_VALUE}px`;
-  document.querySelector(`#${elevator.name} .elevator`).textContent = elevator.currentFloor;
-  // document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 ${400 - elevator.currentHeight}px`;
-  // document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 ${addedVal}px`;
-
-  // document.querySelector(`#${elevator.name} .elevator`).style.transition = `top 5s`;
-  // document.querySelector(`#${elevator.name} .elevator`).style.translate  = `0 ${targetFloor*200}px`;
-  // const elevatorNode = document.querySelector(`#${elevator.name} .elevator`)
-  // elevatorNode.style.transition = `transform ${duration}s linear`;
-  // elevatorNode.style.transform = `translateY(${elevator.currentFloor - elevator.nextFloor * 100}px)`;
-  // elevatorNode.style.transform = `translateY(${floorChanges * 100}px)`;
+  document.querySelector(`#${elevator.name} .floor-display`).textContent = elevator.currentFloor;
 }
 
 export function addWaitingPersonToFloor(floorNumber) {
@@ -110,22 +106,30 @@ function initializeElevators(distanceBetweenFloors) {
 }
 
 function initializeSingleElevator(elevator, distanceBetweenFloors) {
+  // <div class="stat">Total time spent:<span id="tts"></span></div>
+  // <div class="stat">Total wait:<span id="tw"></span></div>
+  // <div class="stat">Average wait:<span id="aw"></span></div>
+  // <div class="stat">Longest wait:<span id="lw"></span></div>
   const container = document.querySelector("#elevators");
   container.insertAdjacentHTML(
     "beforeend",
     /*HTML*/ `
     <div id=${elevator.name}>
+    
     <div class="elevator-header">
       <h2>${elevator.algorithmName} </h2>
     </div>
       <div class="stat-container">
-        <div class="stat">Total time spent:<span id="tts"></span></div>
-        <div class="stat">Total wait:<span id="tw"></span></div>
-        <div class="stat">Average wait:<span id="aw"></span></div>
-        <div class="stat">Longest wait:<span id="lw"></span></div>
+        <div class="stat">Total requests:<span id="tr">0</span></div>
+        <div class="stat">Total wait:<span id="tw">0</span></div>
+        <div class="stat">Average wait:<span id="aw">0.00</span></div>
+        <div class="stat">Longest wait:<span id="lw">0</span></div>
       </div>
       <div class="elevator-container">
-        <div class="elevator-tube"><div class="elevator" id="elevator-${elevator.name}">0</div></div>
+      <div class="finish-overlay" hidden>Elevator done!</div>
+        <div class="elevator-tube"><div class="elevator" id="elevator-${elevator.name}">F: <span class="floor-display">0</span>
+        <div>P: <span class="people-count">0</span></div>
+        </div></div>
           <div class="floor-container">    
           </div>
         </div>
