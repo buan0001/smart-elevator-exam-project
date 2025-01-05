@@ -22,11 +22,14 @@ export function initView(distanceBetweenFloors) {
 
 export function updateFloorStats(controller) {
   // const elevator = controller.elevator
-  const node = document.querySelector(`#${controller.name} .floor-container`);
+  // console.log(controller.elevator);
+  
+  const node = document.querySelector(`#${controller.elevator.name} .floor-container`);
   for (let i = 0; i < controller.currentWaitTimes.length; i++) {
     const countNode = node.querySelector(`#waitingForCount${i}`);
-    countNode.textContent = "Waiting: " + controller.currentWaitTimes[i].waitingFor;
-    node.querySelector(`#waitCount${i}`).textContent = "Moves waited: " + controller.currentWaitTimes[i].outside[0];
+    countNode.textContent = "Waiting: " + controller.elevator.floorRequests[i].waitingFor;
+    node.querySelector(`#waitCount${i}`).textContent = "Moves waited: " + controller.elevator.floorRequests[i].waitingFor;
+    // node.querySelector(`#waitCount${i}`).textContent = "Moves waited: " + controller.elevator.floorRequests[i].outside[0];
     node.querySelector(`#goingToCount${i}`).textContent = "Going: " + controller.elevator.floorRequests[i].goingTo;
   }
 }

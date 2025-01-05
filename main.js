@@ -1,4 +1,5 @@
 import ElevatorManager from "./ElevatorManager.js";
+import Dijkstra from "./implemenations/Dijkstra.js";
 import Look from "./implemenations/Look.js";
 import ShortestSeekFirst from "./implemenations/ShortestSeekFirst.js";
 import * as view from "./view.js";
@@ -53,11 +54,11 @@ export function startSimulation() {
 }
 
 let elevatorControllers = [new Look(FLOOR_WEIGHTS)];
-// let elevators = [new Look( FLOOR_WEIGHTS)];
 function createElevatorInstances() {
   elevatorControllers = [];
   elevatorControllers.push(new ElevatorManager(new Look(FLOOR_WEIGHTS)));
   elevatorControllers.push(new ElevatorManager(new ShortestSeekFirst(FLOOR_WEIGHTS)));
+  elevatorControllers.push(new ElevatorManager(new Dijkstra(FLOOR_WEIGHTS)));
   CONFIG.totalElevators = elevatorControllers.length
 }
 

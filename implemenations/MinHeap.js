@@ -6,7 +6,7 @@ export default class MinHeap {
   }
 
   insert(id, cost) {
-    const noded = new Node(id, cost)
+    const noded = new Node(id, cost);
     this.heap.push(noded);
     this.heapifyUp(this.heap.length - 1);
   }
@@ -17,14 +17,14 @@ export default class MinHeap {
     return this.heap.pop();
   }
 
-  decreaseKey(index, newCost) {
-    const oldCost = this.heap[index];
-    this.heap[index] = newCost;
-    if (newCost < oldCost) {
-        this.heapifyUp(index)
-    }
-    else {
-        this.heapifyDown(index)
+  decreaseKey(id, newCost) {
+    console.log("Decreasing cost for", id, "to:",newCost);
+    
+    const index = this.indexOfId(id);
+    console.log("index:",index);
+    if (index != null){
+        this.heap[index].cost = newCost;
+        this.heapifyUp(index);
     }
   }
 
@@ -62,6 +62,10 @@ export default class MinHeap {
     }
   }
 
+  idAtIndex(index) {
+    return this.heap[index].id;
+  }
+
   isEmpty() {
     return this.heap.length > 0;
   }
@@ -78,6 +82,15 @@ export default class MinHeap {
     return Math.floor((index - 1) / 2);
   }
 
+  indexOfId(id) {
+    for (let i = 0; i < this.heap.length; i++) {
+      if (this.heap[i].id === id) {
+        return i;
+      }
+    }
+    return null; // Not found
+  }
+
   swap(index1, index2) {
     const temp = this.heap[index1];
     this.heap[index1] = this.heap[index2];
@@ -85,11 +98,11 @@ export default class MinHeap {
   }
 }
 
-class Node{
-    id;
-    cost;
-    constructor(id, cost = Infinity){
-        this.id = id;
-        this.cost = cost;
-    }
+class Node {
+  id;
+  cost;
+  constructor(id, cost = Infinity) {
+    this.id = id;
+    this.cost = cost;
+  }
 }

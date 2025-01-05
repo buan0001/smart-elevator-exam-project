@@ -62,7 +62,7 @@ export default class ElevatorManager {
     if (this.elevator.nextFloor != null) {
       controller.moveElevator(this, deltaTime);
     } else if (this.elevator.hasRequests()) {
-      this.elevator.next();
+      this.elevator.next(this.currentWaitTimes);
     }
     // No more requests and the elevator has arrived at its final destination
     else if (controller.allSpawned()) {
