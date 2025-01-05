@@ -23,6 +23,7 @@ const CONFIG = {
   paused: false,
   peopleSpawned: 0,
   maxSpawn: 20,
+  spawnsPerSecond: 0.2,
   totalFloors: 5,
 };
 
@@ -66,7 +67,7 @@ function addWaitingPerson() {
   view.addWaitingPersonToFloor(floor);
   for (const controller of elevatorControllers) {
     controller.addRequest(floor, true);
-    view.updateFloorStats(controller.elevator);
+    view.updateFloorStats(controller);
   }
 }
 
@@ -88,10 +89,10 @@ let timer;
 function keepRandomlyAddingPeople() {
   if (allSpawned() || CONFIG.paused) {
     return false;
-  } else if (Math.random() < 0.1) {
+  } else if (Math.random() < CONFIG.spawnsPerSecond) {
     addWaitingPerson();
   }
-  timer = setTimeout(keepRandomlyAddingPeople, 500);
+  timer = setTimeout(keepRandomlyAddingPeople, 1000);
 }
 
 // Problem: Converting the height in meters to the translate value in px
@@ -99,7 +100,6 @@ export function moveElevator(controller, deltaTime) {
     
     const elevator = controller.elevator;
     const distance = (elevator.speed / 1000) * deltaTime;
-    console.log("Delta time:",deltaTime, "distance:",distance);
 
   if (elevator.currentFloor < elevator.nextFloor) {
     elevator.currentHeight += distance;
@@ -125,7 +125,7 @@ export function moveElevator(controller, deltaTime) {
   if (elevator.currentFloor == elevator.nextFloor) {
     console.log("Arrived at floor!", elevator.currentFloor);
     controller.elevatorReachedFloor(elevator.nextFloor);
-    view.updateFloorStats(elevator);
+    view.updateFloorStats(controller);
     view.updateElevatorStats(controller)
     view.removePeopleFromFloor(elevator, elevator.currentFloor);
   }

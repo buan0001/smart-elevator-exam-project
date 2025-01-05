@@ -5,28 +5,38 @@ export default class MinHeap {
     return this.heap[0];
   }
 
-  insert(floor, cost) {}
+  insert(id, cost) {
+    const noded = new Node(id, cost)
+    this.heap.push(noded);
+    this.heapifyUp(this.heap.length - 1);
+  }
 
   extractMin() {
-
-    this.swap(0, this.heap.length-1) // Swap the first and the last element
+    this.swap(0, this.heap.length - 1); // Swap the first and the last element
     this.heapifyDown(0); // Repair the heap
-    return this.heap.pop()
+    return this.heap.pop();
   }
 
   decreaseKey(index, newCost) {
+    const oldCost = this.heap[index];
     this.heap[index] = newCost;
+    if (newCost < oldCost) {
+        this.heapifyUp(index)
+    }
+    else {
+        this.heapifyDown(index)
+    }
   }
 
-  // Used in combination with decrease key
+  // Used in combination with decrease key and insertions
   heapifyUp(childIndex) {
     let parentIndex = this.indexOfParent(childIndex);
     while (parentIndex >= 0) {
       if (this.heap[parentIndex] > this.heap[childIndex]) {
         // let isLeftChild = nodeIndex % 2 // Right child is always on even index, left child on odd
-        this.swap(parentIndex, childIndex)
-        childIndex = parentIndex
-        parentIndex = this.indexOfParent(childIndex)
+        this.swap(parentIndex, childIndex);
+        childIndex = parentIndex;
+        parentIndex = this.indexOfParent(childIndex);
       } else {
         // This is in case we performed a swap with a parent where the other child actually had a lower value than this.
         this.heapifyDown(childIndex);
@@ -73,4 +83,13 @@ export default class MinHeap {
     this.heap[index1] = this.heap[index2];
     this.heap[index2] = temp;
   }
+}
+
+class Node{
+    id;
+    cost;
+    constructor(id, cost = Infinity){
+        this.id = id;
+        this.cost = cost;
+    }
 }

@@ -67,7 +67,7 @@ export default class ElevatorManager {
     // No more requests and the elevator has arrived at its final destination
     else if (controller.allSpawned()) {
       this.isFinished = true;
-      controller.incrementElevatorFinished(this.elevator);
+      controller.incrementElevatorFinished(this);
     }
   }
 

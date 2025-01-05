@@ -20,13 +20,14 @@ export function initView(distanceBetweenFloors) {
   addEventListeners();
 }
 
-export function updateFloorStats(elevator) {
-  const node = document.querySelector(`#${elevator.name} .floor-container`);
-  for (let i = 0; i < elevator.floorRequests.length; i++) {
+export function updateFloorStats(controller) {
+  // const elevator = controller.elevator
+  const node = document.querySelector(`#${controller.name} .floor-container`);
+  for (let i = 0; i < controller.currentWaitTimes.length; i++) {
     const countNode = node.querySelector(`#waitingForCount${i}`);
-    countNode.textContent = "Waiting: " + elevator.floorRequests[i].waitingFor;
-    node.querySelector(`#waitCount${i}`).textContent = "Moves waited: " + elevator.floorRequests[i].reqBeforeServed;
-    node.querySelector(`#goingToCount${i}`).textContent = "Going: " + elevator.floorRequests[i].goingTo;
+    countNode.textContent = "Waiting: " + controller.currentWaitTimes[i].waitingFor;
+    node.querySelector(`#waitCount${i}`).textContent = "Moves waited: " + controller.currentWaitTimes[i].outside[0];
+    node.querySelector(`#goingToCount${i}`).textContent = "Going: " + controller.elevator.floorRequests[i].goingTo;
   }
 }
 
