@@ -33,15 +33,9 @@ body {
   width: 4em;
   aspect-ratio: 1/1;
   background-size: 100%;
-  /* background-repeat: no-repeat; */
   height: fit-content;
   position: absolute;
-  /* y: 100px; */
   translate: 0 var(--ELEVATOR_MIN_HEIGHT);
-  /* translate: 0 600px; */
-  /* translate: 0 620px; */
-  
-  /* translate: -7.5em 33em; */
   text-align: center;
 }
 
@@ -55,23 +49,17 @@ body {
 .floor {
   display: flex;
   width: 20em;
-  /* height: 100px; */
   height: 50px;
   border-bottom: 2px black solid;
   border-right: 2px brown dotted;
   box-sizing: border-box;
   justify-content: start;
   align-content: baseline;
-  /* text-align: right; */
-  /* text-justify: ; */
-  /* flex-direction: row-reverse; */
 }
 
 .top-floor {
   border-right: 0;
-  /* height: 50px; */
   margin-top: 35px;
-  /* padding-top: 35px; */
 }
 
 .floor-hitbox {

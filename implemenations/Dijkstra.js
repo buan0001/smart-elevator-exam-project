@@ -60,13 +60,13 @@ export default class Dijkstra extends Elevator {
         priorityQueue.insert(i, Infinity);
       }
     }
+    // A valid neighbour is a floor with requests on it that is directly connected to the current floor
+    // This could also be floor +/-1 if we hadn't removed floors with no requests
 
     let current;
     while (priorityQueue.peek()) {
       current = priorityQueue.extractMin();
       priorityQueue.heap.forEach((node) => {
-        // A valid neighbour is a floor with requests on it that is directly connected to the current floor
-        // This could also be floor +/-1 if we hadn't removed floors with no requests
         if (this.isValidNeighbour(dist, current, node)) {
           let newCost = dist[current.id] + this.getWeightedCost(current.id, node.id, currentWaitTimes);
           if (newCost <= dist[node.id]) {
