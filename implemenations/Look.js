@@ -7,12 +7,10 @@ export default class Look extends Elevator {
   next() {
     if (!this.hasRequests()) {
       console.log("No requests, please stop calling me");
-
       this.nextFloor = null;
     }
     // In case the elevator is idle and people arrive on it's current floor - we need to let them in!
     else if (this.totalReq(this.currentFloor) > 0 && this.nextFloor == null) {
-      // console.log("Returning the same floor");
       this.nextFloor = this.currentFloor;
     } else if (this.timeSinceLastUpdate + Math.min(1000, 5000 / this.speed) < performance.now()) {
       let nextScan = this.lastDirectionUp ? this.findNextRequestUp.bind(this) : this.findNextRequestDown.bind(this);
@@ -26,7 +24,6 @@ export default class Look extends Elevator {
         this.nextFloor = tempNext;
       }
       this.timeSinceLastUpdate = performance.now();
-      // console.log("Setting floor after scan");
     }
 
     console.log("Next:", this.nextFloor);

@@ -45,35 +45,20 @@ export default class Dijkstra extends Elevator {
     console.log("Weighted cost:", cost, "Outside wait:", outsideWait, ". Inside wait:", insideWait, "People requesting the floor:", peopleRequestingFloor);
 
     return cost;
-    /* 
-    REMEMBER: The number one goal is to minimize TOTAL wait (in moves). Not entirely realistic since real time isn't part of the calculation.
-    In the real world stopping at a floor takes significantly less time than going from the ground floor to the top floor and going back afterwards - this isn't reflected in the additional "moves"
-    THINGS THAT MIGHT AFFECT THE COST:
-    - Going past a floor with somebody waiting outside.
-        - Should it be free to pick somebody up "on the way" to another floor? So that going from 0 to 3, stopping at 1 and 2 costs nothing? If so, this might be very boring..
-        - Maybe just a reduced price?
-        - Maybe ignored since we dont really operate with real time?
-    - Wait time. Perhaps more costly to have people wait inside the elevator than outside
-
-    THINGS TO CONSIDER:
-    - Going to one floor over another makes those other people have to wait
-    - Going to a floor with people waiting outside means additional requests to the other floors. Should these be considered?
-    */
   }
 
   createPath(currentWaitTimes) {
     const dist = [];
-    //   const prev = [];
     const prev = {};
-    // const prev = new Map();
+
     dist[this.currentFloor] = 0;
     const priorityQueue = new MinHeap();
     priorityQueue.insert(this.currentFloor, 0); // Insert the source as no cost
+
     for (let i = 0; i < this.floorAmt; i++) {
       // We dont need to add floors that dont have any request on them
       if (i != this.currentFloor && this.totalReq(i) > 0) {
         prev[i] = undefined;
-        // prev.set(i, undefined);
         dist[i] = Infinity;
         // 'i' matches the floor number, so we also use it as the node's id
         priorityQueue.insert(i, Infinity);
@@ -84,10 +69,7 @@ export default class Dijkstra extends Elevator {
     while (priorityQueue.peek()) {
       current = priorityQueue.extractMin();
       priorityQueue.heap.forEach((node) => {
-        console.log("Looking at current:", current, "and node:", node);
-
         if (this.isValidNeighbour(dist, current, node)) {
-          //   let newCost = dist[current.id] + this.floorWeights[current.id][node.id];
           let newCost = dist[current.id] + this.getWeightedCost(current.id, node.id, currentWaitTimes);
           console.log("New cost:", newCost, ". Old cost:", node.cost, ". Distanc to current id:", dist[current.id]);
           if (newCost <= dist[node.id]) {
@@ -97,25 +79,6 @@ export default class Dijkstra extends Elevator {
           }
         }
       });
-
-      // //   dist.forEach((otherFloor, floorNum) => {
-      //     // But skip comparing the floor to itself as well as comparing back to the source
-      //     if (floorNum != current.id && floorNum != this.currentFloor && isValidNeighbour(current, floorNum)) {
-      //     //   let newCost = dist[current.id] + this.floorWeights[current.id][floorNum];
-      //       let newCost = dist[current.id] + this.getWeightedCost(current, floorNum, currentWaitTimes);
-      //       console.log("New cost:", newCost, ". Old cost:", dist[floorNum], ". Distanc to current id:", dist[current.id]);
-      //       console.log("Current:",current,"Floornum", floorNum);
-
-      //       if (newCost <= dist[floorNum]) {
-      //         prev[floorNum] = current.id;
-      //         // prev.set(floorNum, current.id);
-      //         dist[floorNum] = newCost;
-      //         priorityQueue.decreaseKey(floorNum, newCost);
-      //       } else {
-      //         console.log("Cost isnt reduced");
-      //       }
-      //     }
-      //   });
     }
 
     const reconstructedPath = [];
