@@ -15,15 +15,21 @@ body {
   width: 20px;
   background-size: 100%;
 }
-.p-1{
-    background-image: url("/smart-elevator/images/person1.png");
+.p-1 {
+  background-image: url("images/person1.png");
 }
-.p-2{ background-image: url("/smart-elevator/images/person2.png");}
-.p-3{ background-image: url("/smart-elevator/images/person3.png");}
-.p-4{ background-image: url("/smart-elevator/images/person4.png");}
+.p-2 {
+  background-image: url("images/person2.png");
+}
+.p-3 {
+  background-image: url("images/person3.png");
+}
+.p-4 {
+  background-image: url("images/person4.png");
+}
 
 .elevator {
-  background-image: url("/smart-elevator/images/elevator.png");
+  background-image: url("images/elevator.png");
   width: 4em;
   aspect-ratio: 1/1;
   background-size: 100%;
@@ -65,7 +71,7 @@ body {
   /* padding-top: 35px; */
 }
 
-.floor-hitbox{
+.floor-hitbox {
   /* margin-top: 20px; */
 }
 
