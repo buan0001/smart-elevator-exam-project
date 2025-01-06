@@ -1,4 +1,4 @@
-import Elevator from "../Elevator.js";
+import Elevator from "../elevator-helpers/Elevator.js";
 import MinHeap from "./MinHeap.js";
 
 export default class Dijkstra extends Elevator {
@@ -6,11 +6,11 @@ export default class Dijkstra extends Elevator {
   activePath = [];
   count = 0;
   totalRequestsLastTime = 0;
-  
+
   next(currentWaitTimes) {
     if (this.activePath.length > 0 && this.nextFloor == this.currentFloor) {
       this.nextFloor = this.activePath.pop();
-    } else if (this.timeSinceLastUpdate + (Math.min(1000, 5000 / this.speed)) < performance.now()) {
+    } else if (this.timeSinceLastUpdate + Math.min(1000, 5000 / this.speed) < performance.now()) {
       if (!this.hasRequests()) {
         console.log("No requests, please stop calling me");
         this.nextFloor = null;

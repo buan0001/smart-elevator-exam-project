@@ -1,4 +1,4 @@
-import Elevator from "../Elevator.js";
+import Elevator from "../elevator-helpers/Elevator.js";
 
 export default class Look extends Elevator {
   name = "look";
@@ -25,7 +25,7 @@ export default class Look extends Elevator {
       } else {
         this.nextFloor = tempNext;
       }
-      this.timeSinceLastUpdate = performance.now()
+      this.timeSinceLastUpdate = performance.now();
       // console.log("Setting floor after scan");
     }
 

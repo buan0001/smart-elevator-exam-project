@@ -1,4 +1,4 @@
-import * as controller from "./main.js";
+import * as controller from "../main.js";
 export default class ElevatorManager {
   elevator;
   isStoppedAtFloor = true;
@@ -23,7 +23,9 @@ export default class ElevatorManager {
     for (let i = 0; i < elevatorInstance.floorAmt; i++) {
       this.currentWaitTimes.push({ inside: [], outside: [] }); // Create an empty array for each floor
     }
-    if (Number(speed)) {this.changeElevatorSpeed(speed)}
+    if (Number(speed)) {
+      this.changeElevatorSpeed(speed);
+    }
   }
 
   get totalRequests() {

@@ -1,4 +1,4 @@
-import ElevatorManager from "./ElevatorManager.js";
+import ElevatorManager from "./elevator-helpers/ElevatorManager.js";
 import Dijkstra from "./implemenations/Dijkstra.js";
 import Look from "./implemenations/Look.js";
 import ShortestSeekFirst from "./implemenations/ShortestSeekFirst.js";
@@ -33,7 +33,7 @@ const CONFIG = {
 function loaded() {
   view.initView(FLOOR_HEIGHT_IN_METERS);
   view.updateDisplayedElevators();
-  createElevatorInstances()
+  createElevatorInstances();
   view.synchronizeInputFields(CONFIG.elevatorSpeed, CONFIG.spawnsPerSecond, CONFIG.maxSpawn);
 }
 
@@ -53,7 +53,7 @@ export function startSimulation() {
   console.log("Starting");
   createElevatorInstances();
   clearGameState();
-  keepRandomlyAddingPeople()
+  keepRandomlyAddingPeople();
   requestAnimationFrame(gameTick);
 }
 
@@ -94,12 +94,15 @@ let spawnTimer;
 function keepRandomlyAddingPeople() {
   console.log("Adding person");
 
-  if (allSpawned() || CONFIG.paused) {
-    return false;
+  if (CONFIG.paused) {
+    return;
   }
   for (let i = 0; i < CONFIG.spawnRollsPerSecond; i++) {
-    if (Math.random() < 0.5){
-        addWaitingPerson();
+    if (allSpawned()) {
+      return;
+    }
+    if (Math.random() < 0.5) {
+      addWaitingPerson();
     }
   }
 
@@ -178,7 +181,7 @@ export function incrementElevatorFinished(elevatorController) {
 export function changeElevatorSpeed(newSpeed) {
   CONFIG.elevatorSpeed = newSpeed;
   console.log("New speed", newSpeed);
-  
+
   for (const controller of elevatorControllers) {
     controller.changeElevatorSpeed(newSpeed);
   }

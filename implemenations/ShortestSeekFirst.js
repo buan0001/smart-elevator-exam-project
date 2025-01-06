@@ -1,4 +1,4 @@
-import Elevator from "../Elevator.js";
+import Elevator from "../elevator-helpers/Elevator.js";
 
 export default class ShortestSeekFirst extends Elevator {
   name = "ssf";
@@ -20,7 +20,7 @@ export default class ShortestSeekFirst extends Elevator {
         let distanceDown = this.floorWeights[this.currentFloor][nextDown];
         this.nextFloor = distanceUp > distanceDown ? nextDown : nextUp;
       }
-      this.timeSinceLastUpdate = performance.now()
+      this.timeSinceLastUpdate = performance.now();
     }
   }
 }
