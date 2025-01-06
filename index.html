@@ -5,22 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elevator algorithms</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="animations.css">
 </head>
 <body>
     <h1>Elevator algorithms in action</h1>
     <div id="control-panel">
-        <button id="start-btn">Start it all!</button>
-        <button id="pause-btn" disabled autocomplete="off">Pause</button>
-        <button>Single step</button>
         <div>
-             Elevators to display: 
+            <button id="start-btn">Start it all!</button>
+            <button id="pause-btn" disabled autocomplete="off">Pause</button>
+        </div>
+        <div>
+            <div>
+            <span>Elevators to display: </span>
             <input data-id="ssf" type="checkbox" class="elevatorBox" checked>Shortest Seek First</input>
             <input data-id="look" type="checkbox" class="elevatorBox" checked>Look</input>
             <input data-id="dijkstra" type="checkbox" class="elevatorBox" checked>Dijkstra</input>
+            </div>
+        </div>
+        <div>
+            <label for="elevator-speed">Elevator speed</label>
+            <input id="elevator-speed" type="range" min="2" max="30" autocomplete="off">
+            <label for="spawn-speed">Spawn speed</label>
+            <input id="spawn-speed" type="range" min="1" max="10" autocomplete="off">
+            <label for="max-spawn">Total people arriving</label>
+            <input id="max-spawn" type="number" min="1" max="1000">
+            
         </div>
     </div>
     <div id="elevators"></div>
+    <div id="license" hidden><a href="http://www.freepik.com">Designed by macrovector / Freepik</a></div>
 </body>
 <script src="main.js" type="module"></script>
 </html>

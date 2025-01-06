@@ -18,11 +18,12 @@ export default class ElevatorManager {
   insideRequests = 0;
   peopleInsideElevator = 0;
 
-  constructor(elevatorInstance) {
+  constructor(elevatorInstance, speed) {
     this.elevator = elevatorInstance;
     for (let i = 0; i < elevatorInstance.floorAmt; i++) {
       this.currentWaitTimes.push({ inside: [], outside: [] }); // Create an empty array for each floor
     }
+    if (Number(speed)) {this.changeElevatorSpeed(speed)}
   }
 
   get totalRequests() {
@@ -36,7 +37,12 @@ export default class ElevatorManager {
   }
 
   get averageWait() {
-    return (this.averageWaitInside + this.averageWaitOutside) / 2;
+    const wait = (this.averageWaitInside + this.averageWaitOutside) / 2;
+    if (isNaN(wait)) {
+      return 0;
+    } else {
+      return wait;
+    }
   }
 
   get averageWaitInside() {
@@ -45,6 +51,11 @@ export default class ElevatorManager {
 
   get averageWaitOutside() {
     return this.totalWaitOutside / this.outsideRequests;
+  }
+
+  changeElevatorSpeed(speed) {
+    this.elevator.speed = speed;
+    this.timeStoppedAtEachFloor = Math.min(1000, 5000 / speed);
   }
 
   handleTick(deltaTime) {
@@ -78,14 +89,13 @@ export default class ElevatorManager {
     const peopleEnteringFromFloor = this.elevator.arrivedAtFloor();
     if (peopleEnteringFromFloor > 0) {
       const floorArr = this.arrayWithoutFloor(floor);
-
       for (let i = 0; i < peopleEnteringFromFloor; i++) {
         const temp = floorArr[Math.floor(Math.random() * (this.elevator.floorAmt - 1))];
         this.peopleInsideElevator++;
         this.addRequest(temp);
       }
     }
-    this.elevator.next();
+    this.elevator.next(this.currentWaitTimes);
   }
 
   addRequest(floorNum, isWaitingForElevator) {
@@ -97,6 +107,7 @@ export default class ElevatorManager {
       this.currentWaitTimes[floorNum].inside.push(0); // New request with 0 wait time so far
     }
     this.elevator.addRequest(floorNum, isWaitingForElevator);
+    this.elevator.next(this.currentWaitTimes);
   }
 
   updateWaits(floor) {

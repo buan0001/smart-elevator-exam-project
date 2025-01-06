@@ -2,20 +2,21 @@ export default class Elevator {
   // Array of objects with following properties: (int) goingTo, (int) waitingFor
   floorRequests;
   // 2d array of graph weights
-  floorWeights; // Let controller keep track of the actual length between floors - here we only need the weights
+  floorWeights;
   currentRequestAmount = 0;
   currentHeight = 0;
-  isMoving = false;
   currentFloor = 0;
   nextFloor = null;
-  speed = 6; // meters per second
+  speed = 5; // meters per second
+  allTimeRequests = 0;
+  timeSinceLastUpdate = performance.now();
 
   constructor(floorWeights, startFloor = 0) {
     this.floorWeights = floorWeights;
     // We always keep the floorRequests at max length so we can use the array indices as floors
     this.floorRequests = new Array(floorWeights.length);
     for (let i = 0; i < this.floorRequests.length; i++) {
-      this.floorRequests[i] = { goingTo: 0, waitingFor: 0, };
+      this.floorRequests[i] = { goingTo: 0, waitingFor: 0 };
     }
 
     this.currentFloor = startFloor;
@@ -51,6 +52,7 @@ export default class Elevator {
         this.floorRequests[floorNum].goingTo++;
       }
       this.currentRequestAmount++;
+      this.allTimeRequests++;
     }
   }
 

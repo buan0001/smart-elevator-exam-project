@@ -5,26 +5,38 @@ export default class Dijkstra extends Elevator {
   name = "dijkstra";
   activePath = [];
   count = 0;
+  totalRequestsLastTime = 0;
+  
   next(currentWaitTimes) {
-    if (this.count != 0) {
-      return;
-    }
-    this.count++;
-    if (this.activePath.length > 0) {
-      return;
-    } else {
-      console.log("Current wait times;", currentWaitTimes);
+    if (this.activePath.length > 0 && this.nextFloor == this.currentFloor) {
+      this.nextFloor = this.activePath.pop();
+    } else if (this.timeSinceLastUpdate + (Math.min(1000, 5000 / this.speed)) < performance.now()) {
+      if (!this.hasRequests()) {
+        console.log("No requests, please stop calling me");
+        this.nextFloor = null;
+        return;
+      } else if (this.totalReq(this.currentFloor) > 0 && this.nextFloor == null) {
+        // To allow people on the same floor in after idle time
+        this.nextFloor = this.currentFloor;
+      } else {
+        // We recalculate every time a new request is recieved. Can be optimized greatly
+        console.log("Getting new path");
 
-      const { prev, dist } = this.createPath(currentWaitTimes);
-      console.log(prev, dist);
-      this.activePath.push(1);
+        const { reconstructedPath, dist } = this.createPath(currentWaitTimes);
+        console.log("Reconstructed path:", reconstructedPath);
+
+        this.activePath = reconstructedPath;
+        this.nextFloor = this.activePath.pop();
+      }
+      this.timeSinceLastUpdate = performance.now();
     }
+    console.log("Not enough time has passed");
   }
 
   getWeightedCost(src, floor, currentWaitTimes) {
     console.log("src:", src, ". Floornode:", floor);
 
-    let cost = this.floorWeights[src.id][floor];
+    let cost = this.floorWeights[src][floor];
     const outsideWait = currentWaitTimes[floor].outside.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
     const insideWait = currentWaitTimes[floor].inside.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
     const peopleRequestingFloor = this.totalReq(floor);
@@ -71,53 +83,126 @@ export default class Dijkstra extends Elevator {
     let current;
     while (priorityQueue.peek()) {
       current = priorityQueue.extractMin();
-      // Treat every node as connected to every other node
-      dist.forEach((otherFloor, floorNum) => {
-        // But skip comparing the floor to itself as well as comparing back to the source
-        if (floorNum != current.id && floorNum != this.currentFloor) {
-        //   let newCost = dist[current.id] + this.floorWeights[current.id][floorNum];
-          let newCost = dist[current.id] + this.getWeightedCost(current, floorNum, currentWaitTimes);
-          console.log("New cost:", newCost, ". Old cost:", dist[floorNum], ". Distanc to current id:", dist[current.id]);
-          console.log("Current:",current,"Floornum", floorNum);
-          
-          if (newCost <= dist[floorNum]) {
-            prev[floorNum] = current.id;
-            // prev.set(floorNum, current.id);
-            dist[floorNum] = newCost;
-            priorityQueue.decreaseKey(floorNum, newCost);
-          } else {
-            console.log("Cost isnt reduced");
+      priorityQueue.heap.forEach((node) => {
+        console.log("Looking at current:", current, "and node:", node);
+
+        if (this.isValidNeighbour(dist, current, node)) {
+          //   let newCost = dist[current.id] + this.floorWeights[current.id][node.id];
+          let newCost = dist[current.id] + this.getWeightedCost(current.id, node.id, currentWaitTimes);
+          console.log("New cost:", newCost, ". Old cost:", node.cost, ". Distanc to current id:", dist[current.id]);
+          if (newCost <= dist[node.id]) {
+            prev[node.id] = current.id;
+            dist[node.id] = newCost;
+            priorityQueue.decreaseKey(node.id, newCost);
           }
         }
       });
+
+      // //   dist.forEach((otherFloor, floorNum) => {
+      //     // But skip comparing the floor to itself as well as comparing back to the source
+      //     if (floorNum != current.id && floorNum != this.currentFloor && isValidNeighbour(current, floorNum)) {
+      //     //   let newCost = dist[current.id] + this.floorWeights[current.id][floorNum];
+      //       let newCost = dist[current.id] + this.getWeightedCost(current, floorNum, currentWaitTimes);
+      //       console.log("New cost:", newCost, ". Old cost:", dist[floorNum], ". Distanc to current id:", dist[current.id]);
+      //       console.log("Current:",current,"Floornum", floorNum);
+
+      //       if (newCost <= dist[floorNum]) {
+      //         prev[floorNum] = current.id;
+      //         // prev.set(floorNum, current.id);
+      //         dist[floorNum] = newCost;
+      //         priorityQueue.decreaseKey(floorNum, newCost);
+      //       } else {
+      //         console.log("Cost isnt reduced");
+      //       }
+      //     }
+      //   });
     }
 
     const reconstructedPath = [];
     // We remove every entry from prev and insert them into the reconstructed path
     let prevFloor = this.currentFloor;
-    let iterations = 0;
-    console.log("Prev:",prev);
-    
+    let count = 0;
+    console.log("Prev after all", prev);
+    console.log("Dist after all:", dist);
+
+    let foundMatchesDuringLoop = [];
+    const stragglers = [];
     while (Object.keys(prev).length > 0) {
-      if (iterations > 10) {
-        console.log("Breaking");
-        
+      if (count > 10) {
+        console.error("Stuck in infinite loop");
+
         break;
       }
+      console.log("Prev in loop", prev, "length:", Object.keys(prev).length, "Prev floor:", prevFloor, "Reconstructed path so far:", reconstructedPath);
+
       for (const key in prev) {
-        console.log(key, prev);
-        
-        iterations++;
+        count++;
         if (prev[key] == prevFloor) {
-          reconstructedPath.push(+key);
-          prevFloor = key;
-          delete prev[key];
+          foundMatchesDuringLoop.push(+key);
+        }
+      }
+      if (foundMatchesDuringLoop.length == 2) {
+        const first = foundMatchesDuringLoop.pop();
+        const second = foundMatchesDuringLoop.pop();
+        // Whichever has the lower weight goes first
+        if (dist[first] < dist[second]) {
+          reconstructedPath.unshift(first);
+          stragglers.push(second);
+          prevFloor = first;
+        } else {
+          reconstructedPath.unshift(second);
+          stragglers.push(first);
+          prevFloor = second;
+        }
+        delete prev[first];
+        delete prev[second];
+      } else if (foundMatchesDuringLoop.length == 1) {
+        const key = foundMatchesDuringLoop.pop();
+        reconstructedPath.unshift(key);
+        prevFloor = key;
+        delete prev[key];
+      } else {
+        prevFloor = stragglers.shift();
+        reconstructedPath.unshift(prevFloor);
+        console.error("PANIC! More than 2 or no matches were found");
+      }
+    }
+    while (stragglers.length > 0) {
+      console.log("removing from stragglers");
+
+      reconstructedPath.unshift(stragglers.shift());
+    }
+
+    //  reconstructedPath.unshift(+key);
+    //  prevFloor = key;
+    //  delete prev[key];
+    return { reconstructedPath, dist };
+  }
+
+  isValidNeighbour(dist, current, maybeNeighbour) {
+    if (current.id > maybeNeighbour.id) {
+      for (let i = current.id - 1; i >= 0; i--) {
+        if (dist[i] != undefined) {
+          // There is an entry on the index
+          if (i == maybeNeighbour.id) {
+            // If its' the same as the neighbours - all good
+            return true;
+          }
+          return false; // Otherwise not
         }
       }
     }
-    console.log(reconstructedPath);
-    
-    return { reconstructedPath, dist };
+
+    for (let i = current.id + 1; i < dist.length; i++) {
+      if (dist[i] != undefined) {
+        // There is an entry on the index
+        if (i == maybeNeighbour.id) {
+          // If its' the same as the neighbours - all good
+          return true;
+        }
+        return false; // Otherwise not
+      }
+    }
   }
 
   //        function Dijkstra(Graph, source):

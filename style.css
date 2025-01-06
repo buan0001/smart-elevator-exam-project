@@ -11,13 +11,16 @@ body {
 }
 
 .person {
-  background-image: url("/smart-elevator/images/person.png");
-  width: 3em;
-  aspect-ratio: 1/1;
+  height: 50px;
+  width: 20px;
   background-size: 100%;
-  /* background-repeat: no-repeat; */
-  height: fit-content;
 }
+.p-1{
+    background-image: url("/smart-elevator/images/person1.png");
+}
+.p-2{ background-image: url("/smart-elevator/images/person2.png");}
+.p-3{ background-image: url("/smart-elevator/images/person3.png");}
+.p-4{ background-image: url("/smart-elevator/images/person4.png");}
 
 .elevator {
   background-image: url("/smart-elevator/images/elevator.png");
@@ -57,7 +60,13 @@ body {
 
 .top-floor {
   border-right: 0;
+  /* height: 50px; */
   margin-top: 35px;
+  /* padding-top: 35px; */
+}
+
+.floor-hitbox{
+  /* margin-top: 20px; */
 }
 
 .fdistance {

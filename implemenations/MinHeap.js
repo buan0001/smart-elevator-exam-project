@@ -6,25 +6,26 @@ export default class MinHeap {
   }
 
   insert(id, cost) {
-    const noded = new Node(id, cost);
-    this.heap.push(noded);
+    const node = new Node(id, cost);
+    this.heap.push(node);
     this.heapifyUp(this.heap.length - 1);
   }
 
   extractMin() {
     this.swap(0, this.heap.length - 1); // Swap the first and the last element
+    const minValNode = this.heap.pop();
     this.heapifyDown(0); // Repair the heap
-    return this.heap.pop();
+    console.log("Returning min val:", minValNode);
+
+    return minValNode;
   }
 
   decreaseKey(id, newCost) {
-    console.log("Decreasing cost for", id, "to:",newCost);
-    
     const index = this.indexOfId(id);
-    console.log("index:",index);
-    if (index != null){
-        this.heap[index].cost = newCost;
-        this.heapifyUp(index);
+    if (index != null) {
+      console.log("Decreasing cost for", id, "to:", newCost, "At index:", index);
+      this.heap[index].cost = newCost;
+      this.heapifyUp(index);
     }
   }
 
@@ -32,7 +33,7 @@ export default class MinHeap {
   heapifyUp(childIndex) {
     let parentIndex = this.indexOfParent(childIndex);
     while (parentIndex >= 0) {
-      if (this.heap[parentIndex] > this.heap[childIndex]) {
+      if (this.heap[parentIndex].cost > this.heap[childIndex].cost) {
         // let isLeftChild = nodeIndex % 2 // Right child is always on even index, left child on odd
         this.swap(parentIndex, childIndex);
         childIndex = parentIndex;
@@ -47,12 +48,12 @@ export default class MinHeap {
 
   heapifyDown(parentIndex) {
     let childIndex = this.indexOfLeftChild(parentIndex);
-    while (childIndex < this.heap.length - 1) {
+    while (childIndex < this.heap.length) {
       // Right child is at left child index + 1. If right child's value is lower, it should be moved up instead
-      if (this.heap[childIndex] > this.heap[childIndex + 1]) {
+      if (childIndex + 1 < this.heap.length && this.heap[childIndex].cost > this.heap[childIndex + 1].cost) {
         childIndex += 1;
       }
-      if (this.heap[parentIndex] > this.heap[childIndex]) {
+      if (this.heap[parentIndex].cost > this.heap[childIndex].cost) {
         this.swap(parentIndex, childIndex);
         parentIndex = childIndex;
         childIndex = this.indexOfLeftChild(parentIndex);
@@ -67,7 +68,7 @@ export default class MinHeap {
   }
 
   isEmpty() {
-    return this.heap.length > 0;
+    return this.heap.length == 0;
   }
 
   indexOfLeftChild(index) {

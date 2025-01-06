@@ -23,7 +23,7 @@ export function initView(distanceBetweenFloors) {
 export function updateFloorStats(controller) {
   // const elevator = controller.elevator
   // console.log(controller.elevator);
-  
+
   const node = document.querySelector(`#${controller.elevator.name} .floor-container`);
   for (let i = 0; i < controller.currentWaitTimes.length; i++) {
     const countNode = node.querySelector(`#waitingForCount${i}`);
@@ -43,6 +43,7 @@ export function updateElevatorStats(elevatorController) {
   const containerNode = document.querySelector(`#${elevatorController.elevator.name}`);
 
   containerNode.querySelector("#tw").textContent = elevatorController.totalWait;
+  // containerNode.querySelector("#aw").textContent = elevatorController.averageWait;
   containerNode.querySelector("#aw").textContent = elevatorController.averageWait.toFixed(2);
   containerNode.querySelector("#lw").textContent = elevatorController.longestWait;
   containerNode.querySelector("#tr").textContent = elevatorController.totalRequests;
@@ -64,14 +65,14 @@ export function displayElevatorFinished(elevatorController) {
     <h2>Outside:</h2>
       <div>Total wait: ${elevatorController.totalWaitOutside}</div>
       <div>Longest wait: ${elevatorController.longestWaitOutside}
-      <div>Average wait: ${elevatorController.averageWaitOutside}</div>
+      <div>Average wait: ${elevatorController.averageWaitOutside.toFixed(2)}</div>
       <div>Totalt wait: ${elevatorController.totalWaitOutside}</div>
     </div>
     <div class="finish-stat-container">
     <h2>Inside:</h2>
       <div>Total wait: ${elevatorController.totalWaitInside}</div>
       <div>Longest wait: ${elevatorController.longestWaitInside}</div>
-      <div>Average wait: ${elevatorController.averageWaitInside}</div>
+      <div>Average wait: ${elevatorController.averageWaitInside.toFixed(2)}</div>
       <div>Totalt wait: ${elevatorController.totalWaitInside}</div>
     </div>
   </div>
@@ -99,7 +100,8 @@ export function addWaitingPersonToFloor(floorNumber) {
   for (const elevator of elevators) {
     const root = document.querySelector(`#${elevator.name}`);
     const floor = root.querySelector(`[data-floor='${floorNumber}']`);
-    floor.insertAdjacentHTML("beforeend", `<div class="person"></div>`);
+    const randomNumber = Math.floor(Math.random()*4)+1
+    floor.insertAdjacentHTML("beforeend", `<div class="person p-${randomNumber}"></div>`);
   }
 }
 
@@ -125,6 +127,16 @@ function addEventListeners() {
     playBtn.innerHTML = "Restart";
     pauseBtn.disabled = false;
   });
+
+  document.querySelector("#elevator-speed").addEventListener("change", (e) => main.changeElevatorSpeed(+e.target.value))
+  document.querySelector("#spawn-speed").addEventListener("change", (e) => main.changeSpawnSpeed(+e.target.value))
+  document.querySelector("#max-spawn").addEventListener("change", (e) => main.changeMaxSpawns(+e.target.value))
+}
+
+export function synchronizeInputFields(elevatorSpeed, spawnSpeed, maxSpawns){
+ document.querySelector("#elevator-speed").value = elevatorSpeed
+ document.querySelector("#spawn-speed").value = spawnSpeed;
+ document.querySelector("#max-spawn").value = maxSpawns;
 }
 
 export function updateDisplayedElevators() {
@@ -177,37 +189,45 @@ function initializeSingleElevator(elevator, distanceBetweenFloors) {
   const floorContainer = container.querySelector(`#${elevator.name} .floor-container`);
   distanceBetweenFloors[4] = 5;
   for (let i = 0; i < 5; i++) {
+    // if (i < 5) {
     if (i < 4) {
       floorContainer.insertAdjacentHTML(
         "afterbegin",
         /*HTML*/ `
+        <div class="floor-hitbox">
         <div class="fdistance" data-fdist="${i}">
         <div class="waitingForCount" id="waitingForCount${i}">Waiting: 0</div>
         <div class="goingToCount" id="goingToCount${i}">Going: 0</div>
         <div class="waitCount" id="waitCount${i}">Moves waited: 0</div>
          ${distanceBetweenFloors[i]}m</div>
         <div class="floor" data-floor="${i}">
+        </div>
          </div>
          `
       );
       floorContainer.querySelector(`[data-fdist="${i}"`).style.setProperty("--FLOOR_HEIGHT", (distanceBetweenFloors[i] - 3) * METER_TO_PIXEL_VALUE + "px");
       // floorContainer.querySelector(`[data-fdist="${i}"`).style.setProperty("--FLOOR_HEIGHT", (distanceBetweenFloors[i] - 4) * 12.5 + "px");
-    } else {
+    }
+    else {
       floorContainer.insertAdjacentHTML(
         "afterbegin",
         /*HTML*/ `
+        
       <div class="waitingForCount" id="waitingForCount${i}">Waiting: 0</div>
       <div class="goingToCount" id="goingToCount${i}">Going: 0</div>
       <div class="waitCount" id="waitCount${i}">Moves waited: 0</div>
-      <div class="floor" data-floor="${i}">
+      <div class="floor" data-floor="${i}"> </div>
+       
         </div>
         `
       );
     }
-
+    
+    // floorContainer.removeChild(document.querySelector(".fdistance"));
     floorContainer.querySelector(`#waitingForCount${i}`).style.setProperty("--FLOOR_HEIGHT", distanceBetweenFloors[i] * -5 + "px");
     floorContainer.querySelector(`#waitCount${i}`).style.setProperty("--FLOOR_HEIGHT", distanceBetweenFloors[i] * -5 + "px");
     // floorContainer.querySelector(`#waitingForCount${i}`).style.setProperty("--FLOOR_HEIGHT", distanceBetweenFloors[i] * -5 + "px");
   }
+  // floorContainer.querySelector(".floor-hitbox").classList.add("top-floor");
   floorContainer.querySelector(".floor").classList.add("top-floor");
 }

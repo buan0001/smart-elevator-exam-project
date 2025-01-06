@@ -3,7 +3,7 @@ import Dijkstra from "./implemenations/Dijkstra.js";
 import Look from "./implemenations/Look.js";
 import ShortestSeekFirst from "./implemenations/ShortestSeekFirst.js";
 import * as view from "./view.js";
-window.addEventListener("DOMContentLoaded", start);
+window.addEventListener("DOMContentLoaded", loaded);
 
 const FLOOR_WEIGHTS = [
   [0, 10, 15, 30, 35],
@@ -19,47 +19,51 @@ const HEIGHT_AT_EVERY_FLOOR = FLOOR_WEIGHTS[0];
 
 const CONFIG = {
   isOver: false,
+  paused: false,
   totalElevators: 1,
   finishedElevators: 0,
-  paused: false,
   peopleSpawned: 0,
-  maxSpawn: 20,
-  spawnsPerSecond: 0.2,
   totalFloors: 5,
+  // Configureable
+  maxSpawn: 40,
+  spawnRollsPerSecond: 1,
+  elevatorSpeed: 5,
 };
 
-function start() {
+function loaded() {
   view.initView(FLOOR_HEIGHT_IN_METERS);
-  view.updateDisplayedElevators()
+  view.updateDisplayedElevators();
+  createElevatorInstances()
+  view.synchronizeInputFields(CONFIG.elevatorSpeed, CONFIG.spawnsPerSecond, CONFIG.maxSpawn);
 }
 
 function clearGameState() {
   CONFIG.isOver = false;
   CONFIG.peopleSpawned = 0;
   CONFIG.finishedElevators = 0;
+  view.resetElevators();
+  clearTimeout(spawnTimer);
+  for (const elevatorController of elevatorControllers) {
+    view.updateFloorStats(elevatorController);
+    view.updateElevatorStats(elevatorController);
+  }
 }
 
 export function startSimulation() {
   console.log("Starting");
-
-  clearGameState();
-  view.resetElevators();
   createElevatorInstances();
-  clearTimeout(timer);
-  for (let i = 0; i < 5; i++) {
-    addWaitingPerson();
-  }
-  keepRandomlyAddingPeople();
+  clearGameState();
+  keepRandomlyAddingPeople()
   requestAnimationFrame(gameTick);
 }
 
 let elevatorControllers = [new Look(FLOOR_WEIGHTS)];
 function createElevatorInstances() {
   elevatorControllers = [];
-  elevatorControllers.push(new ElevatorManager(new Look(FLOOR_WEIGHTS)));
-  elevatorControllers.push(new ElevatorManager(new ShortestSeekFirst(FLOOR_WEIGHTS)));
-  elevatorControllers.push(new ElevatorManager(new Dijkstra(FLOOR_WEIGHTS)));
-  CONFIG.totalElevators = elevatorControllers.length
+  elevatorControllers.push(new ElevatorManager(new Look(FLOOR_WEIGHTS), CONFIG.elevatorSpeed));
+  elevatorControllers.push(new ElevatorManager(new ShortestSeekFirst(FLOOR_WEIGHTS), CONFIG.elevatorSpeed));
+  elevatorControllers.push(new ElevatorManager(new Dijkstra(FLOOR_WEIGHTS), CONFIG.elevatorSpeed));
+  CONFIG.totalElevators = elevatorControllers.length;
 }
 
 function addWaitingPerson() {
@@ -75,32 +79,37 @@ function addWaitingPerson() {
 export function togglePause() {
   CONFIG.paused = !CONFIG.paused;
   if (CONFIG.paused) {
-    clearTimeout(timer);
+    clearTimeout(spawnTimer);
   } else {
     // lastTime has some catching up to do since the timeStamp from requestAnimationFrame() keeps running even when paused
     // Updating lastTime just before unpausing does the trick
     lastTime = performance.now();
     gameTick(lastTime);
-    keepRandomlyAddingPeople();
+    spawnTimer = setTimeout(keepRandomlyAddingPeople, 1000);
   }
   return CONFIG.paused;
 }
 
-let timer;
+let spawnTimer;
 function keepRandomlyAddingPeople() {
+  console.log("Adding person");
+
   if (allSpawned() || CONFIG.paused) {
     return false;
-  } else if (Math.random() < CONFIG.spawnsPerSecond) {
-    addWaitingPerson();
   }
-  timer = setTimeout(keepRandomlyAddingPeople, 1000);
+  for (let i = 0; i < CONFIG.spawnRollsPerSecond; i++) {
+    if (Math.random() < 0.5){
+        addWaitingPerson();
+    }
+  }
+
+  spawnTimer = setTimeout(keepRandomlyAddingPeople, 1000);
 }
 
 // Problem: Converting the height in meters to the translate value in px
 export function moveElevator(controller, deltaTime) {
-    
-    const elevator = controller.elevator;
-    const distance = (elevator.speed / 1000) * deltaTime;
+  const elevator = controller.elevator;
+  const distance = (elevator.speed / 1000) * deltaTime;
 
   if (elevator.currentFloor < elevator.nextFloor) {
     elevator.currentHeight += distance;
@@ -127,14 +136,13 @@ export function moveElevator(controller, deltaTime) {
     console.log("Arrived at floor!", elevator.currentFloor);
     controller.elevatorReachedFloor(elevator.nextFloor);
     view.updateFloorStats(controller);
-    view.updateElevatorStats(controller)
+    view.updateElevatorStats(controller);
     view.removePeopleFromFloor(elevator, elevator.currentFloor);
   }
 }
 
 let lastTime = 0;
 function gameTick(timestamp) {
- 
   if (!CONFIG.paused && !CONFIG.isOver) {
     requestAnimationFrame(gameTick);
   } else {
@@ -146,7 +154,6 @@ function gameTick(timestamp) {
   for (const controller of elevatorControllers) {
     controller.handleTick(deltaTime);
   }
-
 }
 
 export function getTotalFloors() {
@@ -166,4 +173,27 @@ export function incrementElevatorFinished(elevatorController) {
     CONFIG.isOver = true;
   }
   view.displayElevatorFinished(elevatorController);
+}
+
+export function changeElevatorSpeed(newSpeed) {
+  CONFIG.elevatorSpeed = newSpeed;
+  console.log("New speed", newSpeed);
+  
+  for (const controller of elevatorControllers) {
+    controller.changeElevatorSpeed(newSpeed);
+  }
+}
+
+export function changeSpawnSpeed(newSpeed) {
+  CONFIG.spawnRollsPerSecond = newSpeed;
+  console.log("New spawn speed:", CONFIG.spawnRollsPerSecond);
+}
+
+export function changeMaxSpawns(newMax) {
+  if (CONFIG.maxSpawn < newMax && allSpawned()) {
+    // Clear the timeout just in case we hit the small window between the last iteration running and waiting for it to be called
+    clearTimeout(spawnTimer);
+    keepRandomlyAddingPeople();
+  }
+  CONFIG.maxSpawn = newMax;
 }
