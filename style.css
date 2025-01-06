@@ -37,7 +37,10 @@ body {
   height: fit-content;
   position: absolute;
   /* y: 100px; */
-  translate: 0 615px;
+  translate: 0 var(--ELEVATOR_MIN_HEIGHT);
+  /* translate: 0 600px; */
+  /* translate: 0 620px; */
+  
   /* translate: -7.5em 33em; */
   text-align: center;
 }

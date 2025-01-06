@@ -6,15 +6,20 @@ import * as view from "./view.js";
 window.addEventListener("DOMContentLoaded", loaded);
 
 const FLOOR_WEIGHTS = [
-  [0, 10, 15, 30, 35],
-  [10, 0, 5, 20, 25],
-  [15, 5, 0, 15, 20],
-  [30, 20, 15, 0, 5],
-  [35, 25, 20, 5, 0],
+  [0, 8, 15, 28, 34],
+  [8, 0, 7, 20, 26],
+  [15, 7, 0, 13, 19],
+  [28, 20, 13, 0, 6],
+  [34, 26, 19, 6, 0],
 ];
+// const FLOOR_WEIGHTS = [
+//   [0, 10, 15, 30, 35],
+//   [10, 0, 5, 20, 25],
+//   [15, 5, 0, 15, 20],
+//   [30, 20, 15, 0, 5],
+//   [35, 25, 20, 5, 0],
+// ];
 
-// Basically same as floor weights for now. Might want to change?
-const FLOOR_HEIGHT_IN_METERS = [10, 5, 15, 5];
 const HEIGHT_AT_EVERY_FLOOR = FLOOR_WEIGHTS[0];
 
 const CONFIG = {
@@ -31,10 +36,22 @@ const CONFIG = {
 };
 
 function loaded() {
-  view.initView(FLOOR_HEIGHT_IN_METERS);
-  view.updateDisplayedElevators();
   createElevatorInstances();
+  // Sparingly used by view
+  let distanceBetweenFloors = [];
+  for (let i = 0; i < FLOOR_WEIGHTS.length - 1; i++) {
+    distanceBetweenFloors.push(FLOOR_WEIGHTS[0][i + 1] - FLOOR_WEIGHTS[0][i]);
+  }
+  view.initView(distanceBetweenFloors);
+  view.updateDisplayedElevators();
   view.synchronizeInputFields(CONFIG.elevatorSpeed, CONFIG.spawnsPerSecond, CONFIG.maxSpawn);
+}
+
+export function startSimulation() {
+  createElevatorInstances();
+  clearGameState();
+  keepRandomlyAddingPeople();
+  requestAnimationFrame(gameTick);
 }
 
 function clearGameState() {
@@ -49,14 +66,6 @@ function clearGameState() {
   }
 }
 
-export function startSimulation() {
-  console.log("Starting");
-  createElevatorInstances();
-  clearGameState();
-  keepRandomlyAddingPeople();
-  requestAnimationFrame(gameTick);
-}
-
 let elevatorControllers = [new Look(FLOOR_WEIGHTS)];
 function createElevatorInstances() {
   elevatorControllers = [];
@@ -66,9 +75,10 @@ function createElevatorInstances() {
   CONFIG.totalElevators = elevatorControllers.length;
 }
 
+// Currently adds a person to the same floor for every elevator. Mainly for better comparison, but could be randomized more
 function addWaitingPerson() {
   CONFIG.peopleSpawned++;
-  const floor = Math.floor(Math.random() * 5);
+  const floor = Math.floor(Math.random() * CONFIG.totalFloors);
   view.addWaitingPersonToFloor(floor);
   for (const controller of elevatorControllers) {
     controller.addRequest(floor, true);
@@ -92,8 +102,6 @@ export function togglePause() {
 
 let spawnTimer;
 function keepRandomlyAddingPeople() {
-  console.log("Adding person");
-
   if (CONFIG.paused) {
     return;
   }
@@ -101,6 +109,7 @@ function keepRandomlyAddingPeople() {
     if (allSpawned()) {
       return;
     }
+    // Just to make it feel slightly less static
     if (Math.random() < 0.5) {
       addWaitingPerson();
     }
@@ -109,7 +118,6 @@ function keepRandomlyAddingPeople() {
   spawnTimer = setTimeout(keepRandomlyAddingPeople, 1000);
 }
 
-// Problem: Converting the height in meters to the translate value in px
 export function moveElevator(controller, deltaTime) {
   const elevator = controller.elevator;
   const distance = (elevator.speed / 1000) * deltaTime;
@@ -133,13 +141,13 @@ export function moveElevator(controller, deltaTime) {
       elevator.currentHeight = HEIGHT_AT_EVERY_FLOOR[elevator.nextFloor];
     }
   }
+
   view.moveElevator(elevator, distance);
 
+  view.updateFloorStats(controller);
+  view.updateElevatorStats(controller);
   if (elevator.currentFloor == elevator.nextFloor) {
-    console.log("Arrived at floor!", elevator.currentFloor);
     controller.elevatorReachedFloor(elevator.nextFloor);
-    view.updateFloorStats(controller);
-    view.updateElevatorStats(controller);
     view.removePeopleFromFloor(elevator, elevator.currentFloor);
   }
 }

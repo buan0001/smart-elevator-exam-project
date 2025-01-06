@@ -10,7 +10,7 @@ export default class Dijkstra extends Elevator {
   next(currentWaitTimes) {
     if (this.activePath.length > 0 && this.nextFloor == this.currentFloor) {
       this.nextFloor = this.activePath.pop();
-    } else if (this.timeSinceLastUpdate + Math.min(1000, 5000 / this.speed) < performance.now()) {
+    } else {
       if (!this.hasRequests()) {
         console.log("No requests, please stop calling me");
         this.nextFloor = null;
@@ -28,21 +28,17 @@ export default class Dijkstra extends Elevator {
         this.activePath = reconstructedPath;
         this.nextFloor = this.activePath.pop();
       }
-      this.timeSinceLastUpdate = performance.now();
     }
-    console.log("Not enough time has passed");
   }
 
   getWeightedCost(src, floor, currentWaitTimes) {
-    console.log("src:", src, ". Floornode:", floor);
-
     let cost = this.floorWeights[src][floor];
     const outsideWait = currentWaitTimes[floor].outside.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
     const insideWait = currentWaitTimes[floor].inside.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
     const peopleRequestingFloor = this.totalReq(floor);
 
+    // Quite arbitrary weighting - room for fiddeling for more desireable results
     cost = cost / (insideWait + outsideWait + 1) / (peopleRequestingFloor + 1);
-    console.log("Weighted cost:", cost, "Outside wait:", outsideWait, ". Inside wait:", insideWait, "People requesting the floor:", peopleRequestingFloor);
 
     return cost;
   }
@@ -69,9 +65,10 @@ export default class Dijkstra extends Elevator {
     while (priorityQueue.peek()) {
       current = priorityQueue.extractMin();
       priorityQueue.heap.forEach((node) => {
+        // A valid neighbour is a floor with requests on it that is directly connected to the current floor
+        // This could also be floor +/-1 if we hadn't removed floors with no requests
         if (this.isValidNeighbour(dist, current, node)) {
           let newCost = dist[current.id] + this.getWeightedCost(current.id, node.id, currentWaitTimes);
-          console.log("New cost:", newCost, ". Old cost:", node.cost, ". Distanc to current id:", dist[current.id]);
           if (newCost <= dist[node.id]) {
             prev[node.id] = current.id;
             dist[node.id] = newCost;
@@ -84,22 +81,11 @@ export default class Dijkstra extends Elevator {
     const reconstructedPath = [];
     // We remove every entry from prev and insert them into the reconstructed path
     let prevFloor = this.currentFloor;
-    let count = 0;
-    console.log("Prev after all", prev);
-    console.log("Dist after all:", dist);
-
     let foundMatchesDuringLoop = [];
-    const stragglers = [];
+    const leftovers = [];
+
     while (Object.keys(prev).length > 0) {
-      if (count > 10) {
-        console.error("Stuck in infinite loop");
-
-        break;
-      }
-      console.log("Prev in loop", prev, "length:", Object.keys(prev).length, "Prev floor:", prevFloor, "Reconstructed path so far:", reconstructedPath);
-
       for (const key in prev) {
-        count++;
         if (prev[key] == prevFloor) {
           foundMatchesDuringLoop.push(+key);
         }
@@ -107,14 +93,15 @@ export default class Dijkstra extends Elevator {
       if (foundMatchesDuringLoop.length == 2) {
         const first = foundMatchesDuringLoop.pop();
         const second = foundMatchesDuringLoop.pop();
-        // Whichever has the lower weight goes first
+        // Whichever has the lower weight we want to visit first
         if (dist[first] < dist[second]) {
           reconstructedPath.unshift(first);
-          stragglers.push(second);
+          // We have to use the leftover array. If we dont, we might end up with prev entries that point to a floor that isn't the prevFloor
+          leftovers.push(second);
           prevFloor = first;
         } else {
           reconstructedPath.unshift(second);
-          stragglers.push(first);
+          leftovers.push(first);
           prevFloor = second;
         }
         delete prev[first];
@@ -125,70 +112,42 @@ export default class Dijkstra extends Elevator {
         prevFloor = key;
         delete prev[key];
       } else {
-        prevFloor = stragglers.shift();
+        // There's a key left in prev but it doesn't point towards prevFloor.
+        // HOPEFULLY the first entry in leftovers will be what it seeks. Otherwise infinite loop, teehee
+        prevFloor = leftovers.shift();
         reconstructedPath.unshift(prevFloor);
-        console.error("PANIC! More than 2 or no matches were found");
       }
     }
-    while (stragglers.length > 0) {
-      console.log("removing from stragglers");
-
-      reconstructedPath.unshift(stragglers.shift());
+    while (leftovers.length > 0) {
+      reconstructedPath.unshift(leftovers.shift());
     }
 
-    //  reconstructedPath.unshift(+key);
-    //  prevFloor = key;
-    //  delete prev[key];
     return { reconstructedPath, dist };
   }
 
   isValidNeighbour(dist, current, maybeNeighbour) {
     if (current.id > maybeNeighbour.id) {
       for (let i = current.id - 1; i >= 0; i--) {
+        // There is an entry on the index
         if (dist[i] != undefined) {
-          // There is an entry on the index
+          // If its' the same as the neighbours - all good
           if (i == maybeNeighbour.id) {
-            // If its' the same as the neighbours - all good
+            return true;
+          }
+          return false; // Otherwise not
+        }
+      }
+    } else {
+      for (let i = current.id + 1; i < dist.length; i++) {
+        // There is an entry on the index
+        if (dist[i] != undefined) {
+          // If its' the same as the neighbours - all good
+          if (i == maybeNeighbour.id) {
             return true;
           }
           return false; // Otherwise not
         }
       }
     }
-
-    for (let i = current.id + 1; i < dist.length; i++) {
-      if (dist[i] != undefined) {
-        // There is an entry on the index
-        if (i == maybeNeighbour.id) {
-          // If its' the same as the neighbours - all good
-          return true;
-        }
-        return false; // Otherwise not
-      }
-    }
   }
-
-  //        function Dijkstra(Graph, source):
-  // 2       create vertex priority queue Q
-  // 3
-  // 4       dist[source] ← 0                          // Initialization
-  // 5       Q.add_with_priority(source, 0)            // associated priority equals dist[·]
-  // 6
-  // 7       for each vertex v in Graph.Vertices:
-  // 8           if v ≠ source
-  // 9               prev[v] ← UNDEFINED               // Predecessor of v
-  // 10              dist[v] ← INFINITY                // Unknown distance from source to v
-  // 11              Q.add_with_priority(v, INFINITY)
-  // 12
-  // 13
-  // 14      while Q is not empty:                     // The main loop
-  // 15          u ← Q.extract_min()                   // Remove and return best vertex
-  // 16          for each neighbor v of u:             // Go through all v neighbors of u
-  // 17              alt ← dist[u] + Graph.Edges(u, v)
-  // 18              if alt < dist[v]:
-  // 19                  prev[v] ← u
-  // 20                  dist[v] ← alt
-  // 21                  Q.decrease_priority(v, alt)
-  // 22
-  // 23      return dist, prev
 }

@@ -7,7 +7,7 @@ export default class ShortestSeekFirst extends Elevator {
     // In case the elevator is idle and people arrive on it's current floor - we need to let them in!
     if (this.totalReq(this.currentFloor) > 0 && this.nextFloor == null) {
       this.nextFloor = this.currentFloor;
-    } else if (this.timeSinceLastUpdate + Math.min(1000, 5000 / this.speed) < performance.now()) {
+    } else {
       let nextUp = this.findNextRequestUp();
       let nextDown = this.findNextRequestDown();
       // If both are null then we also want nextFloor = null, since that indicates no current requests
@@ -18,9 +18,11 @@ export default class ShortestSeekFirst extends Elevator {
       } else {
         let distanceUp = this.floorWeights[this.currentFloor][nextUp];
         let distanceDown = this.floorWeights[this.currentFloor][nextDown];
+        console.log("current floor", this.currentFloor,"distance up:", distanceUp, "distance down:", distanceDown);
+
         this.nextFloor = distanceUp > distanceDown ? nextDown : nextUp;
       }
-      this.timeSinceLastUpdate = performance.now();
     }
+    console.log("Next floor for ssf:", this.nextFloor);
   }
 }

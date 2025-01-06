@@ -5,6 +5,7 @@ export default class ElevatorManager {
   timeStopped = 0;
   timeStoppedAtEachFloor = 1000;
   isFinished = false;
+  timeSinceLastUpdate = performance.now();
 
   // Stat related
   currentWaitTimes = [];
@@ -109,7 +110,12 @@ export default class ElevatorManager {
       this.currentWaitTimes[floorNum].inside.push(0); // New request with 0 wait time so far
     }
     this.elevator.addRequest(floorNum, isWaitingForElevator);
-    this.elevator.next(this.currentWaitTimes);
+    const now = performance.now();
+    if (this.timeSinceLastUpdate + 4000 < now) {
+    // if (this.timeSinceLastUpdate + Math.min(2000, 15000 / this.elevator.speed) < now) {
+      this.elevator.next(this.currentWaitTimes);
+      this.timeSinceLastUpdate = now;
+    }
   }
 
   updateWaits(floor) {

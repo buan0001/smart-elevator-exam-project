@@ -14,6 +14,7 @@ const elevators = [
   },
 ];
 const METER_TO_PIXEL_VALUE = 50 / 3;
+let ELEVATOR_PX_VAL_AT_BOTTOM = 0;
 
 export function initView(distanceBetweenFloors) {
   initializeElevators(distanceBetweenFloors);
@@ -86,13 +87,14 @@ export function resetElevators() {
 }
 
 export function resetElevator(elevator) {
-  document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 615px`;
+  document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 var(--ELEVATOR_MIN_HEIGHT)`;
+  // document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 615px`;
   const node = document.querySelector(`#${elevator.name}`);
   node.querySelector(".finish-overlay").classList.remove("show");
 }
 
 export function moveElevator(elevator) {
-  document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 ${615 - elevator.currentHeight * METER_TO_PIXEL_VALUE}px`;
+  document.querySelector(`#${elevator.name} .elevator`).style.translate = `0 ${ELEVATOR_PX_VAL_AT_BOTTOM - elevator.currentHeight * METER_TO_PIXEL_VALUE}px`;
   document.querySelector(`#${elevator.name} .floor-display`).textContent = elevator.currentFloor;
 }
 
@@ -151,12 +153,20 @@ export function updateDisplayedElevators() {
 }
 
 function initializeElevators(distanceBetweenFloors) {
+  console.log("Inside Initialize elevators", distanceBetweenFloors);
+  
   for (const elevator of elevators) {
     initializeSingleElevator(elevator, distanceBetweenFloors);
   }
 }
 
 function initializeSingleElevator(elevator, distanceBetweenFloors) {
+  console.log(distanceBetweenFloors);
+  
+  const totalDistanceBetweenFloors = distanceBetweenFloors.reduce((acc, current) => acc+current, 0)
+  ELEVATOR_PX_VAL_AT_BOTTOM = totalDistanceBetweenFloors * METER_TO_PIXEL_VALUE + 35;
+  console.log(totalDistanceBetweenFloors);
+  
   const container = document.querySelector("#elevators");
   container.insertAdjacentHTML(
     "beforeend",
@@ -185,11 +195,10 @@ function initializeSingleElevator(elevator, distanceBetweenFloors) {
     </div>
         `
   );
+  container.querySelector(`#elevator-${elevator.name}`).style.setProperty("--ELEVATOR_MIN_HEIGHT", ELEVATOR_PX_VAL_AT_BOTTOM + "px");
 
   const floorContainer = container.querySelector(`#${elevator.name} .floor-container`);
-  distanceBetweenFloors[4] = 5;
   for (let i = 0; i < 5; i++) {
-    // if (i < 5) {
     if (i < 4) {
       floorContainer.insertAdjacentHTML(
         "afterbegin",
@@ -206,7 +215,7 @@ function initializeSingleElevator(elevator, distanceBetweenFloors) {
          `
       );
       floorContainer.querySelector(`[data-fdist="${i}"`).style.setProperty("--FLOOR_HEIGHT", (distanceBetweenFloors[i] - 3) * METER_TO_PIXEL_VALUE + "px");
-      // floorContainer.querySelector(`[data-fdist="${i}"`).style.setProperty("--FLOOR_HEIGHT", (distanceBetweenFloors[i] - 4) * 12.5 + "px");
+      
     }
     else {
       floorContainer.insertAdjacentHTML(

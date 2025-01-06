@@ -9,7 +9,7 @@ export default class Elevator {
   nextFloor = null;
   speed = 5; // meters per second
   allTimeRequests = 0;
-  timeSinceLastUpdate = performance.now();
+
 
   constructor(floorWeights, startFloor = 0) {
     this.floorWeights = floorWeights;
