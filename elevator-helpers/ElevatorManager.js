@@ -111,7 +111,7 @@ export default class ElevatorManager {
     }
     this.elevator.addRequest(floorNum, isWaitingForElevator);
     const now = performance.now();
-    if (this.timeSinceLastUpdate + 4000 < now) {
+    if (this.timeSinceLastUpdate + 6000 < now) {
     // if (this.timeSinceLastUpdate + Math.min(2000, 15000 / this.elevator.speed) < now) {
       this.elevator.next(this.currentWaitTimes);
       this.timeSinceLastUpdate = now;

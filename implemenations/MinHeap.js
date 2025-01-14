@@ -1,5 +1,6 @@
 export default class MinHeap {
   heap = [];
+  idToIndex = {}; // For constant time when looking up keys
 
   peek() {
     return this.heap[0];
@@ -7,6 +8,7 @@ export default class MinHeap {
 
   insert(id, cost) {
     const node = new Node(id, cost);
+    this.idToIndex[id] = this.heap.length
     this.heap.push(node);
     this.heapifyUp(this.heap.length - 1);
   }
@@ -14,15 +16,18 @@ export default class MinHeap {
   extractMin() {
     this.swap(0, this.heap.length - 1); // Swap the first and the last element
     const minValNode = this.heap.pop();
+
+    delete this.idToIndex[minValNode.id]
     this.heapifyDown(0); // Repair the heap
+
     console.log("Returning min val:", minValNode);
 
     return minValNode;
   }
 
   decreaseKey(id, newCost) {
-    const index = this.indexOfId(id);
-    if (index != null) {
+    const index = this.idToIndex[id] ?? null;
+    if (index != null && index >= 0) {
       console.log("Decreasing cost for", id, "to:", newCost, "At index:", index);
       this.heap[index].cost = newCost;
       this.heapifyUp(index);
@@ -40,7 +45,9 @@ export default class MinHeap {
         parentIndex = this.indexOfParent(childIndex);
       } else {
         // This is in case we performed a swap with a parent where the other child actually had a lower value than this.
-        this.heapifyDown(childIndex);
+        // CORRECTION: Since the other child was already *a child of the parent*, its value must be lower than that of the parent.
+        // So if the current value is lower than that of the parent, it will also be lower than that of the other child
+        // this.heapifyDown(childIndex);
         return;
       }
     }
@@ -83,19 +90,14 @@ export default class MinHeap {
     return Math.floor((index - 1) / 2);
   }
 
-  indexOfId(id) {
-    for (let i = 0; i < this.heap.length; i++) {
-      if (this.heap[i].id === id) {
-        return i;
-      }
-    }
-    return null; // Not found
-  }
 
   swap(index1, index2) {
-    const temp = this.heap[index1];
+    const node1 = this.heap[index1];
+    const node2 = this.heap[index2];
     this.heap[index1] = this.heap[index2];
-    this.heap[index2] = temp;
+    this.heap[index2] = node1;
+    this.idToIndex[node1.id] = index2
+    this.idToIndex[node2.id] = index1
   }
 }
 
